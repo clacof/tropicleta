@@ -1,0 +1,128 @@
+import "server-only";
+import { and, eq, inArray, sql } from "drizzle-orm";
+import { db, schema } from "@/db";
+import { adminEmail, emailLayout, escapeHtml, sendEmail } from "@/lib/email";
+import { displayPhone, formatCLP } from "@/lib/format";
+import { siteUrl } from "@/lib/site-url";
+
+const { orders, orderItems, products } = schema;
+
+export async function getOrderByCode(code: string) {
+  const [order] = await db.select().from(orders).where(eq(orders.code, code)).limit(1);
+  if (!order) return null;
+  const items = await db.select().from(orderItems).where(eq(orderItems.orderId, order.id));
+  return { order, items };
+}
+
+/**
+ * Marca una orden como pagada UNA sola vez (idempotente): solo pasa de "pendiente" a "pagada".
+ * Descuenta stock y envía emails solo en la primera transición.
+ */
+export async function markOrderPaid(
+  orderId: number,
+  payment: { authorizationCode?: string | null; paymentId?: string | null; details?: unknown },
+) {
+  const changed = await db.transaction(async (tx) => {
+    const updated = await tx
+      .update(orders)
+      .set({
+        status: "pagada",
+        paidAt: new Date(),
+        updatedAt: new Date(),
+        authorizationCode: payment.authorizationCode ?? null,
+        paymentId: payment.paymentId ?? null,
+        paymentDetails: payment.details ?? null,
+      })
+      .where(and(eq(orders.id, orderId), inArray(orders.status, ["pendiente", "rechazada"])))
+      .returning({ id: orders.id });
+    if (!updated.length) return false;
+
+    const items = await tx.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+    for (const it of items) {
+      if (!it.productId) continue;
+      await tx
+        .update(products)
+        .set({ stock: sql`GREATEST(${products.stock} - ${it.quantity}, 0)` })
+        .where(eq(products.id, it.productId));
+    }
+    return true;
+  });
+
+  if (changed) await sendOrderEmails(orderId);
+  return changed;
+}
+
+export async function markOrderFailed(orderId: number, status: "rechazada" | "anulada", details?: unknown) {
+  await db
+    .update(orders)
+    .set({ status, updatedAt: new Date(), paymentDetails: details ?? null })
+    .where(and(eq(orders.id, orderId), eq(orders.status, "pendiente")));
+}
+
+async function sendOrderEmails(orderId: number) {
+  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+  if (!order) return;
+  const items = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+  const rows = items
+    .map((i) => `<tr><td>${i.quantity} × ${escapeHtml(i.name)}</td><td align="right">${formatCLP(i.unitPrice * i.quantity)}</td></tr>`)
+    .join("");
+  const delivery =
+    order.deliveryMethod === "retiro"
+      ? "Retiro en el taller (te avisamos cuando esté listo)"
+      : `Despacho a ${escapeHtml(order.address ?? "")}, ${escapeHtml(order.commune ?? "")}`;
+  const body = `
+    <p>Orden <b>${order.code}</b></p>
+    <table width="100%" style="color:#d3d5d7;font-size:14px">${rows}
+      <tr><td>Despacho</td><td align="right">${formatCLP(order.shipping)}</td></tr>
+      <tr><td><b>Total</b></td><td align="right"><b style="color:#f28a17">${formatCLP(order.total)}</b></td></tr>
+    </table>
+    <p>${delivery}</p>`;
+
+  await Promise.all([
+    sendEmail(
+      order.customerEmail,
+      `Tu compra en Tropicleta · ${order.code}`,
+      emailLayout(
+        "¡Gracias por tu compra!",
+        `<p>Hola ${escapeHtml(order.customerName.split(" ")[0])}, recibimos tu pago.</p>${body}
+         <p><a style="color:#f28a17" href="${siteUrl(`/checkout/gracias/?orden=${order.code}`)}">Ver mi orden</a></p>`,
+      ),
+    ),
+    sendEmail(
+      adminEmail(),
+      `Nueva venta ${order.code} · ${formatCLP(order.total)}`,
+      emailLayout(
+        "Nueva venta",
+        `<p>${escapeHtml(order.customerName)} · ${displayPhone(order.customerPhone)} · ${escapeHtml(order.customerEmail)}</p>${body}`,
+      ),
+    ),
+  ]);
+}
+
+/** Consulta un pago en Mercado Pago y actualiza la orden (webhook y página de retorno). */
+export async function syncMercadoPagoPayment(paymentId: string) {
+  const { mpPayment } = await import("@/lib/payments/mercadopago");
+  const p = await mpPayment().get({ id: paymentId });
+  if (!p.external_reference) return null;
+  const [order] = await db.select().from(orders).where(eq(orders.code, p.external_reference)).limit(1);
+  if (!order) return null;
+
+  if (p.status === "approved") {
+    if (Math.round(p.transaction_amount ?? 0) !== order.total) {
+      console.error(`[mp] monto no coincide en ${order.code}: ${p.transaction_amount} vs ${order.total}`);
+      return order.code;
+    }
+    await markOrderPaid(order.id, {
+      paymentId: String(p.id),
+      authorizationCode: p.authorization_code ?? null,
+      details: { provider: "mercadopago", status: p.status, status_detail: p.status_detail, payment_type: p.payment_type_id },
+    });
+  } else if (p.status === "rejected" || p.status === "cancelled") {
+    await markOrderFailed(order.id, p.status === "rejected" ? "rechazada" : "anulada", {
+      provider: "mercadopago",
+      status: p.status,
+      status_detail: p.status_detail,
+    });
+  }
+  return order.code;
+}

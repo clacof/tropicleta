@@ -1,0 +1,1 @@
+ALTER TABLE "contact_messages" ADD COLUMN "subject" varchar(40) DEFAULT 'contacto' NOT NULL;

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+<defs><radialGradient id="g" cx="75%" cy="20%" r="80%"><stop offset="0" stop-color="#f28a17" stop-opacity=".22"/><stop offset=".55" stop-color="#f28a17" stop-opacity="0"/></radialGradient>
+<linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1f2226"/><stop offset="1" stop-color="#141618"/></linearGradient></defs>
+<rect width="800" height="800" fill="url(#b)"/><rect width="800" height="800" fill="url(#g)"/>
+<circle cx="690" cy="760" r="190" fill="none" stroke="#f28a17" stroke-opacity=".12" stroke-width="2"/>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M300 640 V400 M300 400 V250 a25 25 0 0 1 50 0 V380 M350 380 V210 a25 25 0 0 1 50 0 V380 M400 380 V220 a25 25 0 0 1 50 0 V390 M450 390 V270 a25 25 0 0 1 50 0 V470 c0 70 -30 120 -80 150 l-10 20" stroke="#f5f5f2" stroke-width="16"/>
+<path d="M300 470 l-60 -70 a25 25 0 0 0 -38 32 l98 138" stroke="#f5f5f2" stroke-width="16"/>
+<path d="M300 640 h110" stroke="#f5f5f2" stroke-width="16"/>
+<path d="M310 560 h170" stroke="#f28a17" stroke-width="14"/>
+<path d="M325 250 v30 M375 210 v30 M425 220 v30 M475 270 v30" stroke="#f28a17" stroke-width="12"/>
+</g></svg>
