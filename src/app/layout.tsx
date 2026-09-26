@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 import "./ui.css";
 
@@ -19,7 +20,7 @@ const luckiest = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://tropicleta.com"),
+  metadataBase: new URL(siteUrl()),
   title: {
     default: "Tropicleta — Taller de bicicletas en Tierra Amarilla",
     template: "%s · Tropicleta",
