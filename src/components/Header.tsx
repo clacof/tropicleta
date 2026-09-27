@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { nav } from "@/data/site";
 import { WA_COORDINAR } from "@/lib/whatsapp";
 import { CartButton } from "./cart/CartButton";
+import { BrandLogo } from "./BrandLogo";
 
 export function Header() {
   const pathname = usePathname();
@@ -21,8 +22,7 @@ export function Header() {
       <div className="tp-shell">
         <div className="tp-header-inner">
           <Link href="/" className="tp-logo" aria-label="Tropicleta, ir al inicio">
-            <span className="tp-logo-dot" aria-hidden="true" />
-            Tropicleta
+            <BrandLogo />
           </Link>
 
           <nav className="tp-nav" aria-label="Principal">

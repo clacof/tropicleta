@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { formatCLP } from "@/lib/format";
 import { getFeaturedProducts, getHomeServices } from "@/lib/queries";
 import { ProductCard } from "@/components/shop/ProductCard";
@@ -10,6 +11,7 @@ const localBusinessJsonLd = {
   "@type": "BicycleStore",
   name: "Tropicleta",
   url: "https://tropicleta.com",
+  logo: "https://tropicleta.com/brand/tropicleta-emblema.jpeg",
   telephone: "+" + site.whatsappNumber,
   areaServed: site.coverage,
   address: {
@@ -73,7 +75,10 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <aside className="tp-trust" aria-label="Información de atención Tropicleta">
+            <div className="tp-hero-brand">
+              <Image src="/brand/tropicleta-emblema.jpeg" alt="Tropicleta · Taller de bicicletas" width={440} height={440} sizes="(max-width: 719px) 280px, (max-width: 979px) 360px, 440px" preload className="tp-hero-emblem" />
+            </div>
+            <aside className="tp-trust tp-hero-trust" aria-label="Información de atención Tropicleta">
               <div className="tp-trust-item">
                 <div className="tp-trust-label">Diagnóstico</div>
                 <div className="tp-trust-value">Gratuito</div>

@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 import "./ui.css";
+import "./brand.css";
 
 // Fuentes self-hosted (Inter variable + Luckiest Guy, licencia OFL) para no depender de Google Fonts en build.
 const inter = localFont({
@@ -27,14 +28,15 @@ export const metadata: Metadata = {
   },
   description:
     "Servicio técnico de bicicletas con atención coordinada en Tierra Amarilla, cerca de Paipote y Copiapó. Mantenciones, ajustes y servicios especializados.",
-  openGraph: { type: "website", locale: "es_CL", siteName: "Tropicleta" },
+  openGraph: { type: "website", locale: "es_CL", siteName: "Tropicleta", images: [{ url: "/brand/tropicleta-emblema.jpeg", width: 1600, height: 1600, alt: "Tropicleta · Taller de bicicletas" }] },
+  twitter: { card: "summary", images: ["/brand/tropicleta-emblema.jpeg"] },
 };
 
 export const viewport: Viewport = { themeColor: "#0d0e0f" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-CL" className={`${inter.variable} ${luckiest.variable}`}>
+    <html lang="es-CL" data-scroll-behavior="smooth" className={`${inter.variable} ${luckiest.variable}`}>
       <body>{children}</body>
     </html>
   );
