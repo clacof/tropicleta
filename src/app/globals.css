@@ -723,33 +723,6 @@ img {
 }
 
 /* =========================================================
-   WHATSAPP FLOTANTE  (nuevo)
-   ========================================================= */
-
-.tp-wa-float {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 60;
-  width: 58px;
-  height: 58px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--tp-orange);
-  color: #111;
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.45),
-    0 0 0 6px rgba(242, 138, 23, 0.16);
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.tp-wa-float:hover {
-  transform: translateY(-2px);
-  background: #ff9a21;
-}
-
-/* =========================================================
    PÁGINAS EN CONSTRUCCIÓN / 404  (nuevo)
    ========================================================= */
 

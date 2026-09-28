@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 // Ojos en coordenadas de /brand/anim/mascota.webp (720×784). `clip` = interior del ojo (sin el contorno negro).
 // Al pestañear el párpado superior (`upper`, con pliegue `crease`) baja `h` y el inferior (`lower`) sube `h2`;
 // se juntan en `edge`, la línea de pestaña del ojo cerrado.
-const EYES = [
+export const EYES = [
   {
     id: "l",
     clip: "M240 475C231 440 230 400 251 377C261 367 275 364 290 364L312 364C323 381 334 400 340 418C336 440 330 460 321 478Z",

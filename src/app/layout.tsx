@@ -5,6 +5,7 @@ import "./globals.css";
 import "./ui.css";
 import "./brand.css";
 import "./emblem.css";
+import "./chat.css";
 
 // Fuentes self-hosted (Inter variable + Luckiest Guy, licencia OFL) para no depender de Google Fonts en build.
 const inter = localFont({

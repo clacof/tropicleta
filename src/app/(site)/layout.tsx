@@ -1,6 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { WhatsAppFloat } from "@/components/WhatsAppFloat";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 
@@ -13,7 +13,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <Header />
       <main id="content">{children}</main>
       <Footer />
-      <WhatsAppFloat />
+      <ChatWidget />
       <CartDrawer />
     </CartProvider>
   );
