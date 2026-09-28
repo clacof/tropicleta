@@ -3,11 +3,13 @@ import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import * as schema from "./schema";
+import { databaseUrl } from "./url";
 import { fallbackCategories, fallbackFeatured } from "../data/services-fallback";
 
 async function main() {
-  if (!process.env.DATABASE_URL) throw new Error("Configura DATABASE_URL en Vercel antes de publicar.");
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 1, connectionTimeoutMillis: 15000 });
+  const url = databaseUrl();
+  if (!url) throw new Error("Configura DATABASE_URL (o POSTGRES_URL) en Vercel para este entorno (Production/Preview) antes de publicar.");
+  const pool = new Pool({ connectionString: url, max: 1, connectionTimeoutMillis: 15000 });
   try {
     const db = drizzle(pool, { schema });
     await migrate(db, { migrationsFolder: "./drizzle" });
@@ -27,7 +29,7 @@ async function main() {
 
 // Log completo: los errores de conexión de pg (AggregateError, SSL, DNS) suelen venir con `message` vacío
 main().catch((error) => {
-  const host = (() => { try { return new URL(process.env.DATABASE_URL ?? "").host; } catch { return "(DATABASE_URL inválida)"; } })();
+  const host = (() => { try { return new URL(databaseUrl() ?? "").host; } catch { return "(DATABASE_URL inválida)"; } })();
   console.error(`[deploy] Falló la preparación de la BD (host: ${host})`);
   console.error(error);
   for (const e of error?.errors ?? []) console.error("  ↳", e?.code ?? "", e?.message ?? e);
