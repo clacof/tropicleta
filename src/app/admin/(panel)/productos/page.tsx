@@ -25,6 +25,10 @@ export default async function ProductosAdmin() {
           Nuevo producto
         </Link>
       </div>
+      {rows.some(({ p }) => !p.active && p.price === 0) && <div className="tp-draft-note">
+        <strong>Productos preparados para completar</strong>
+        <p>Las fichas con precio “Por definir” son borradores y no aparecen en la tienda. Abre cada producto, confirma su descripción, precio y stock, y marca “Publicado” cuando esté listo.</p>
+      </div>}
       <div className="tp-table-wrap">
         <table className="tp-table">
           <thead>
@@ -49,11 +53,11 @@ export default async function ProductosAdmin() {
                   )}
                 </td>
                 <td>{c?.name ?? "—"}</td>
-                <td className="num">{formatCLP(p.price)}</td>
+                <td className="num">{p.price > 0 ? formatCLP(p.price) : "Por definir"}</td>
                 <td className="num" style={p.stock === 0 ? { color: "#fca5a5" } : undefined}>
                   {p.stock}
                 </td>
-                <td>{p.active ? "Publicado" : "Archivado"}</td>
+                <td>{p.active ? "Publicado" : p.price === 0 ? "Borrador" : "Archivado"}</td>
                 <td className="num">
                   {p.active && (
                     <form action={archiveProduct}>

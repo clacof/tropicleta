@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import * as schema from "./schema";
 import { databaseUrl } from "./url";
-import { fallbackCategories, fallbackFeatured } from "../data/services-fallback";
+import { completeCatalog } from "./catalog";
 
 async function main() {
   const url = databaseUrl();
@@ -13,14 +13,8 @@ async function main() {
   try {
     const db = drizzle(pool, { schema });
     await migrate(db, { migrationsFolder: "./drizzle" });
-    await db.transaction(async (tx) => {
-      await tx.insert(schema.serviceCategories).values(fallbackCategories.map((c, sort) => ({ ...c, sort }))).onConflictDoNothing();
-      const categories = await tx.select().from(schema.serviceCategories);
-      await tx.insert(schema.services).values(fallbackFeatured.map((s, sort) => ({
-        slug: s.slug, name: s.name, price: s.price, featured: true, sort,
-        categoryId: categories.find((c) => c.slug === s.categorySlug)!.id,
-      }))).onConflictDoNothing();
-    });
+    const added = await completeCatalog(db);
+    console.log(`Catálogo: ${added.services} servicios y ${added.drafts} borradores de productos agregados.`);
     console.log("Base de datos preparada; datos existentes conservados.");
   } finally {
     await pool.end();

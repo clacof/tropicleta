@@ -1,0 +1,8 @@
+.tp-catalog-search{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:24px}
+.tp-catalog-search-field{display:grid;gap:8px;flex:1 1 260px;font-size:14px;font-weight:600}
+.tp-catalog-search-field input{width:100%;min-width:0}
+.tp-catalog-count{color:#bbb;font-size:14px;margin:0 0 24px}
+.tp-catalog-empty{padding:32px;border:1px solid #444;border-radius:16px;background:#171717}
+.tp-catalog-empty h2{margin:0 0 12px;font-size:24px}
+.tp-draft-note{padding:18px;border:1px solid #7b5b20;border-radius:12px;background:#2a2112;margin-bottom:24px}
+@media(max-width:540px){.tp-catalog-search .tp-btn{flex:1 1 auto}.tp-catalog-search-field{flex-basis:100%}}

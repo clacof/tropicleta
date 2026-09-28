@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CatalogIcon } from "@/components/CatalogIcon";
+import { CatalogSearch } from "@/components/CatalogSearch";
+import { matchesSearch } from "@/lib/catalog-search";
+import { whatsappUrl } from "@/lib/whatsapp";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { SortSelect } from "@/components/shop/SortSelect";
 import { getProductCategories, getProducts, type ProductSort } from "@/lib/queries";
@@ -12,17 +15,20 @@ export const metadata: Metadata = {
   description: "Productos seleccionados para ciclistas, elegidos para complementar el trabajo del taller Tropicleta.",
 };
 
-type Props = { searchParams: Promise<{ categoria?: string; orden?: string }> };
+type Props = { searchParams: Promise<{ categoria?: string; orden?: string; q?: string }> };
 const sorts: ProductSort[] = ["recientes", "precio-asc", "precio-desc"];
 
 export default async function TiendaPage({ searchParams }: Props) {
-  const { categoria, orden } = await searchParams;
+  const { categoria, orden, q } = await searchParams;
+  const query = (q ?? "").trim().slice(0, 100);
   const sort = sorts.includes(orden as ProductSort) ? (orden as ProductSort) : "recientes";
-  const [categories, products] = await Promise.all([getProductCategories(), getProducts({ category: categoria, sort })]);
+  const [categories, allProducts] = await Promise.all([getProductCategories(), getProducts({ category: categoria, sort })]);
+  const products = allProducts.filter((p) => matchesSearch(query, p.name, p.description));
 
   const href = (cat?: string) => {
     const p = new URLSearchParams();
     if (cat) p.set("categoria", cat);
+    if (query) p.set("q", query);
     if (sort !== "recientes") p.set("orden", sort);
     const q = p.toString();
     return `/tienda/${q ? "?" + q : ""}`;
@@ -37,14 +43,14 @@ export default async function TiendaPage({ searchParams }: Props) {
             Productos <span>seleccionados.</span>
           </h1>
           <p className="tp-hero-copy">
-            Una selección pequeña de productos para ciclistas, elegidos para complementar el trabajo del taller. Paga
-            con Webpay o Mercado Pago y retira en el taller o recibe en tu casa.
+            Repuestos, mantención y accesorios para tu bicicleta. Revisa la disponibilidad o consúltanos por la pieza que necesitas.
           </p>
         </div>
       </section>
 
       <section className="tp-section" style={{ paddingTop: 48 }}>
         <div className="tp-shell">
+          <CatalogSearch action="/tienda/" query={query} label="Buscar productos" placeholder="Ej.: cámara, lubricante, luces…" hidden={{ categoria, orden: sort }} />
           <div className="tp-shop-toolbar">
             <nav className="tp-chip-nav" aria-label="Categorías de productos">
               <Link className="tp-chip" href={href()} aria-current={!categoria ? "true" : undefined}>
@@ -59,6 +65,7 @@ export default async function TiendaPage({ searchParams }: Props) {
             </nav>
             <SortSelect value={sort} />
           </div>
+          <p className="tp-catalog-count">{products.length} {products.length === 1 ? "producto" : "productos"}{query ? ` para “${query}”` : ""}</p>
 
           {products.length ? (
             <div className="tp-product-grid">
@@ -67,12 +74,14 @@ export default async function TiendaPage({ searchParams }: Props) {
               ))}
             </div>
           ) : (
-            <div className="tp-shop-placeholder">
+            <div className="tp-catalog-empty">
               <div>
-                <strong>Todavía no hay productos en esta categoría.</strong>
-                <br />
-                <br />
-                Muy pronto sumaremos más.
+                <h2>{query ? "No encontramos ese producto" : "Consulta productos y disponibilidad"}</h2>
+                <p>{query ? "Prueba con otra palabra o consulta por la pieza que buscas." : "Estamos preparando nuestro catálogo online. Escríbenos con el modelo de tu bicicleta y te ayudamos a encontrar lo que necesitas."}</p>
+                <div className="tp-actions">
+                  {(query || categoria) && <Link className="tp-btn tp-btn-secondary" href="/tienda/">Ver todo el catálogo</Link>}
+                  <a className="tp-btn tp-btn-primary" href={whatsappUrl(`Hola Tropicleta, quiero consultar disponibilidad ${query ? `de ${query}` : "de repuestos y accesorios"}.`)} target="_blank" rel="noopener">Consultar por WhatsApp</a>
+                </div>
               </div>
             </div>
           )}

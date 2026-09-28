@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CatalogIcon } from "@/components/CatalogIcon";
+import { CatalogSearch } from "@/components/CatalogSearch";
+import { matchesSearch } from "@/lib/catalog-search";
 import { getServiceCatalog } from "@/lib/queries";
 import { formatCLP } from "@/lib/format";
 import { whatsappUrl, WA_COORDINAR } from "@/lib/whatsapp";
@@ -13,8 +15,12 @@ export const metadata: Metadata = {
     "Catálogo de servicios del taller Tropicleta en Tierra Amarilla: mantenciones, suspensiones, transmisión, frenos, ruedas, ejes, scooters eléctricos y retiro a domicilio.",
 };
 
-export default async function ServiciosPage() {
-  const catalog = await getServiceCatalog();
+export default async function ServiciosPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const query = ((await searchParams).q ?? "").trim().slice(0, 100);
+  const all = await getServiceCatalog();
+  const catalog = all.map((c) => ({ ...c, services: c.services.filter((s) => matchesSearch(query, s.name, s.summary, c.name)) }))
+    .filter((c) => !query || c.services.length > 0);
+  const total = catalog.reduce((sum, c) => sum + c.services.length, 0);
 
   return (
     <>
@@ -41,6 +47,13 @@ export default async function ServiciosPage() {
 
       <section className="tp-section">
         <div className="tp-shell">
+          <CatalogSearch action="/servicios/" query={query} label="Buscar un servicio" placeholder="Ej.: frenos, cadena, suspensión…" />
+          <p className="tp-catalog-count">{total} {total === 1 ? "servicio disponible" : "servicios disponibles"}{query ? ` para “${query}”` : ""}. Los servicios sin precio se cotizan tras el diagnóstico.</p>
+          {catalog.length === 0 && <div className="tp-catalog-empty">
+            <h2>No encontramos ese servicio</h2><p>Prueba con otra palabra o cuéntanos qué necesita tu bicicleta.</p>
+            <div className="tp-actions"><Link className="tp-btn tp-btn-secondary" href="/servicios/">Ver todos los servicios</Link>
+              <a className="tp-btn tp-btn-primary" href={WA_COORDINAR} target="_blank" rel="noopener">Consultar al taller</a></div>
+          </div>}
           <nav className="tp-chip-nav" aria-label="Categorías de servicio">
             {catalog.map((c) => (
               <a key={c.slug} className="tp-chip" href={`#${c.slug}`}>

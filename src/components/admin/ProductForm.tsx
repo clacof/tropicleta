@@ -21,7 +21,7 @@ export function ProductForm({ product, categories }: { product: Product | null; 
       {p && <input type="hidden" name="id" value={p.id} />}
       <div className="tp-form-grid">
         <Field name="name" label="Nombre" state={state} defaultValue={p?.name} required className="tp-span-2" />
-        <Field name="price" label="Precio (CLP)" state={state} defaultValue={p?.price?.toString() ?? ""} inputMode="numeric" required />
+        <Field name="price" label="Precio (CLP)" state={state} defaultValue={p?.price ? p.price.toString() : ""} inputMode="numeric" hint="Obligatorio para publicar. Puedes dejarlo vacío en un borrador." />
         <Field name="compareAtPrice" label="Precio anterior (CLP)" state={state} defaultValue={p?.compareAtPrice?.toString() ?? ""} inputMode="numeric" optional hint="Para mostrar oferta" />
         <Field name="stock" label="Stock" type="number" min={0} state={state} defaultValue={String(p?.stock ?? 0)} required />
         <Field name="categoryId" label="Categoría" as="select" state={state} defaultValue={p?.categoryId ? String(p.categoryId) : ""}>

@@ -283,7 +283,7 @@ const productSchema = z.object({
     .transform((v) => (v ? Number(v) : null)),
   newCategory: z.string().trim().max(60).optional(),
   description: z.string().trim().max(4000).optional(),
-  price: money.refine((v) => v !== null && v > 0, "Precio requerido"),
+  price: money,
   compareAtPrice: money,
   stock: z.coerce.number({ error: "Stock requerido" }).int().min(0, "No puede ser negativo"),
   images: z.string().optional(),
@@ -297,6 +297,8 @@ export async function saveProduct(_prev: FormState, fd: FormData): Promise<FormS
   const parsed = productSchema.safeParse(values);
   if (!parsed.success) return { errors: zodErrors(parsed.error), values };
   const d = parsed.data;
+  if (d.active === "on" && (!d.price || d.price <= 0))
+    return { errors: { price: "Confirma un precio mayor que cero antes de publicar" }, values };
 
   const files = fd.getAll("uploads").filter((f): f is File => f instanceof File && f.size > 0);
   const fileError = validateImages(files);
@@ -341,7 +343,7 @@ export async function saveProduct(_prev: FormState, fd: FormData): Promise<FormS
     slug,
     categoryId,
     description: d.description || null,
-    price: d.price!,
+    price: d.price ?? 0,
     compareAtPrice: d.compareAtPrice,
     stock: d.stock,
     images,
