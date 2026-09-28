@@ -25,4 +25,11 @@ async function main() {
   }
 }
 
-main().catch((error) => { console.error(error.message); process.exitCode = 1; });
+// Log completo: los errores de conexión de pg (AggregateError, SSL, DNS) suelen venir con `message` vacío
+main().catch((error) => {
+  const host = (() => { try { return new URL(process.env.DATABASE_URL ?? "").host; } catch { return "(DATABASE_URL inválida)"; } })();
+  console.error(`[deploy] Falló la preparación de la BD (host: ${host})`);
+  console.error(error);
+  for (const e of error?.errors ?? []) console.error("  ↳", e?.code ?? "", e?.message ?? e);
+  process.exitCode = 1;
+});
