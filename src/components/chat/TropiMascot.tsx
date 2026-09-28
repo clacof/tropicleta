@@ -28,7 +28,7 @@ export function TropiMascot({ emotion, pulse = 0, size = 56, reaction = true }: 
   return (
     <span className={`tp-tropi tp-tropi--${emotion}`} style={{ width: size, height: size * (784 / 720) }} aria-hidden="true">
       <span key={pulse} className="tp-tropi-body">
-        <Image src="/brand/anim/mascota-sm.webp" alt="" fill sizes={`${size}px`} />
+        <Image src="/brand/mascota-oficial.webp" alt="" fill sizes={`${size}px`} />
         <svg className="tp-tropi-eyes" viewBox="0 0 720 784">
           <defs>
             {EYES.map((e) => (

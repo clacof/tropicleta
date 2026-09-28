@@ -6,14 +6,14 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { site } from "@/data/site";
 import { WA_CONSULTAR, WA_COORDINAR } from "@/lib/whatsapp";
 import { WorkshopGallery } from "@/components/WorkshopGallery";
-import { AnimatedEmblem } from "@/components/AnimatedEmblem";
+import Image from "next/image";
 
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
   "@type": "BicycleStore",
   name: "Tropicleta",
   url: "https://tropicleta.com",
-  logo: "https://tropicleta.com/brand/tropicleta-emblema.jpeg",
+  logo: "https://tropicleta.com/brand/tropicleta-social.png",
   telephone: "+" + site.whatsappNumber,
   areaServed: site.coverage,
   address: {
@@ -78,7 +78,7 @@ export default async function HomePage() {
             </div>
 
             <div className="tp-hero-brand">
-              <AnimatedEmblem />
+              <Image src="/brand/sello-oficial.webp" alt="Tropicleta · Taller de bicicletas" width={960} height={961} sizes="(max-width: 719px) 280px, (max-width: 979px) 360px, 440px" className="tp-official-emblem" preload />
             </div>
             <aside className="tp-trust tp-hero-trust" aria-label="Información de atención Tropicleta">
               <div className="tp-trust-item">

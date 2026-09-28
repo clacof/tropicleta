@@ -4,7 +4,7 @@
 .tp-logo { padding-top: 0; flex-shrink: 0; }
 .tp-header-inner { min-height: 84px; height: auto; padding-block: 10px; }
 .tp-footer-logo { display: inline-block; }
-.tp-footer-logo img { display: block; width: 142px; height: auto; border-radius: 12px; }
+.tp-footer-logo img { display: block; width: 142px; height: auto; border-radius: 0; }
 .tp-hero-brand { display: flex; align-items: center; justify-content: center; }
 .tp-hero-trust { grid-column: 1 / -1; }
 .tp-admin-side .tp-brand-lockup { gap: 8px; font-size: 20px; }
@@ -35,3 +35,7 @@
 .tp-workshop-caption p{font-size:14px;line-height:1.6;color:#bbb;margin:0}
 @media(max-width:979px){.tp-workshop-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tp-workshop-heading{align-items:flex-start;flex-direction:column}}
 @media(max-width:639px){.tp-workshop-grid{grid-template-columns:1fr}}
+
+.tp-official-emblem { display: block; width: min(100%, 280px); height: auto; }
+@media (min-width: 720px) { .tp-official-emblem { width: min(100%, 360px); } }
+@media (min-width: 980px) { .tp-official-emblem { width: min(100%, 440px); } }
