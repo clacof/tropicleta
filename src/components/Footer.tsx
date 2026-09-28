@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { footerLinks, site } from "@/data/site";
 import { WA_CONSULTAR } from "@/lib/whatsapp";
 import { SocialIcon } from "./SocialIcon";
@@ -11,9 +12,8 @@ export function Footer() {
       <div className="tp-shell">
         <div className="tp-footer-grid">
           <div className="tp-footer-brand">
-            <Link href="/" className="tp-logo">
-              <span className="tp-logo-dot" aria-hidden="true" />
-              Tropicleta
+            <Link href="/" className="tp-footer-logo" aria-label="Tropicleta, ir al inicio">
+              <Image src="/brand/tropicleta-completo.jpeg" alt="Tropicleta · Taller de bicicletas" width={142} height={224} sizes="142px" />
             </Link>
             <p>
               Taller de bicicletas y scooters eléctricos en Tierra Amarilla. Atención con coordinación previa y retiro y
@@ -72,6 +72,7 @@ export function Footer() {
         </div>
 
         <div className="tp-footer-bottom">
+          <Link href="/admin/">Administración</Link>
           <span>
             © {year} {site.domain}
           </span>

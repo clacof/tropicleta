@@ -22,6 +22,7 @@ export function getDb(): DB {
     const { Pool } = require("pg") as typeof import("pg");
     g.__tpDb = drizzlePg(new Pool({ connectionString: process.env.DATABASE_URL, max: 5 }), { schema });
   } else {
+    if (process.env.VERCEL) throw new Error("Falta configurar DATABASE_URL para guardar los datos del taller.");
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { PGlite } = require("@electric-sql/pglite") as typeof import("@electric-sql/pglite");
     // eslint-disable-next-line @typescript-eslint/no-require-imports

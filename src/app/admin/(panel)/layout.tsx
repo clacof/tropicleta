@@ -3,6 +3,7 @@ import Link from "next/link";
 import { count, eq, inArray } from "drizzle-orm";
 import { logout } from "@/actions/admin";
 import { AdminNav } from "@/components/admin/AdminNav";
+import { BrandLogo } from "@/components/BrandLogo";
 import { db, schema } from "@/db";
 import { requireAdmin } from "@/lib/auth";
 
@@ -21,8 +22,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     <div className="tp-admin">
       <aside className="tp-admin-side">
         <Link href="/admin/" className="tp-logo" style={{ fontSize: 22 }}>
-          <span className="tp-logo-dot" aria-hidden="true" />
-          Tropicleta
+          <BrandLogo />
         </Link>
         <AdminNav badges={{ "/admin/reservas/": b.n, "/admin/ordenes/": o.n, "/admin/mensajes/": m.n }} />
         <div style={{ display: "flex", gap: 8, marginTop: 18, flexWrap: "wrap" }}>

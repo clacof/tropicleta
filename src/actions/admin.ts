@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -48,7 +48,9 @@ export async function updateOrderStatus(fd: FormData) {
   await requireAdmin();
   const id = Number(fd.get("id"));
   const status = z.enum(["pagada", "lista", "entregada", "anulada"]).parse(fd.get("status"));
-  await db.update(schema.orders).set({ status, updatedAt: new Date() }).where(eq(schema.orders.id, id));
+  await db.update(schema.orders).set({ status, updatedAt: new Date(),
+    ...(status === "pagada" ? { paidAt: sql`coalesce(${schema.orders.paidAt}, now())` } : {}),
+  }).where(eq(schema.orders.id, id));
   revalidatePath("/admin", "layout");
 }
 

@@ -1232,3 +1232,7 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+.tp-accounting-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.tp-accounting-fields label, .tp-accounting-filter label { display: grid; gap: 6px; }
+.tp-accounting-filter { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
+@media (max-width: 600px) { .tp-accounting-fields { grid-template-columns: 1fr; } }

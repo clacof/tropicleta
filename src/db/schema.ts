@@ -1,5 +1,7 @@
 import {
   boolean,
+  check,
+  uniqueIndex,
   date,
   integer,
   jsonb,
@@ -10,6 +12,22 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+
+export const cashEntries = pgTable("cash_entries", {
+  id: serial("id").primaryKey(),
+  requestId: varchar("request_id", { length: 36 }).notNull(),
+  date: date("date").notNull(),
+  type: varchar("type", { length: 10 }).notNull(),
+  category: varchar("category", { length: 60 }).notNull(),
+  description: text("description").notNull(),
+  amount: integer("amount").notNull(),
+  method: varchar("method", { length: 30 }).notNull(),
+  reference: varchar("reference", { length: 120 }).notNull().default(""),
+  voidReason: text("void_reason"),
+  voidedAt: timestamp("voided_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("cash_request_unique").on(t.requestId), check("cash_positive", sql`${t.amount} > 0`), check("cash_type", sql`${t.type} in ('ingreso', 'gasto')`)]);
 
 /* ============================ SERVICIOS ============================ */
 

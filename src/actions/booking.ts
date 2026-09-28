@@ -1,6 +1,6 @@
 "use server";
 
-import { inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db, schema } from "@/db";
 import { adminEmail, emailLayout, escapeHtml, sendEmail } from "@/lib/email";
@@ -20,8 +20,9 @@ export async function createBooking(_prev: FormState, fd: FormData): Promise<For
     const found = await db
       .select({ slug: schema.services.slug, name: schema.services.name })
       .from(schema.services)
-      .where(inArray(schema.services.slug, d.services));
-    if (!found.length) return { errors: { services: "Elige al menos un servicio" }, values };
+      .where(and(inArray(schema.services.slug, d.services), eq(schema.services.active, true)));
+    if (!found.length || found.length !== new Set(d.services).size)
+      return { errors: { services: "Uno de los servicios ya no está disponible. Vuelve a seleccionarlos." }, values };
 
     code = shortCode("TP");
     await db.insert(schema.bookings).values({

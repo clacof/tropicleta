@@ -1,16 +1,9 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { clampQuantity as clampQty, parseCart, type CartItem } from "@/lib/cart";
 
-export type CartItem = {
-  productId: number;
-  slug: string;
-  name: string;
-  price: number;
-  image?: string | null;
-  quantity: number;
-  stock: number;
-};
+export type { CartItem } from "@/lib/cart";
 
 type CartContextValue = {
   items: CartItem[];
@@ -27,14 +20,13 @@ type CartContextValue = {
 };
 
 const STORAGE_KEY = "tp-cart-v1";
-const MAX_QTY = 10;
 const CartContext = createContext<CartContextValue | null>(null);
 
 function readStorage(): CartItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? (JSON.parse(raw) as CartItem[]) : [];
-    return Array.isArray(parsed) ? parsed.filter((i) => i && typeof i.productId === "number") : [];
+    return parseCart(parsed);
   } catch {
     return [];
   }
@@ -62,13 +54,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items, ready]);
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
+    const previousOverflow = document.body.style.overflow;
+    if (isOpen) document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     if (isOpen) window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [isOpen]);
-
-  const clampQty = (q: number, stock: number) => Math.max(0, Math.min(q, stock, MAX_QTY));
 
   const add = useCallback((item: Omit<CartItem, "quantity">, quantity = 1) => {
     setItems((prev) => {
@@ -76,7 +70,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (existing) {
         return prev.map((i) =>
           i.productId === item.productId ? { ...i, ...item, quantity: clampQty(i.quantity + quantity, item.stock) } : i,
-        );
+        ).filter((i) => i.quantity > 0);
       }
       return [...prev, { ...item, quantity: clampQty(quantity, item.stock) }].filter((i) => i.quantity > 0);
     });
