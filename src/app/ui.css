@@ -165,6 +165,9 @@
 
 .tp-chip {
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 16px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
@@ -181,6 +184,21 @@
 .tp-chip[aria-current="true"] {
   color: var(--tp-white);
   border-color: rgba(242, 138, 23, 0.7);
+}
+
+.tp-chip .tp-cat-icon {
+  color: var(--tp-orange);
+}
+
+.tp-category-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tp-category-heading .tp-cat-icon {
+  flex: 0 0 auto;
+  color: var(--tp-orange);
 }
 
 .tp-check-list {

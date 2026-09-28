@@ -416,14 +416,15 @@ img {
     background 0.2s ease;
 }
 
-.tp-category::before {
-  content: "";
-  width: 6px;
-  height: 6px;
+.tp-category .tp-cat-icon {
   flex: 0 0 auto;
-  margin-right: 10px;
-  border-radius: 50%;
-  background: var(--tp-orange);
+  margin-right: 12px;
+  color: var(--tp-orange);
+  transition: transform 0.2s ease;
+}
+
+.tp-category:hover .tp-cat-icon {
+  transform: rotate(-8deg) scale(1.08);
 }
 
 .tp-category:hover {

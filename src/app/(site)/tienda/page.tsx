@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CatalogIcon } from "@/components/CatalogIcon";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { SortSelect } from "@/components/shop/SortSelect";
 import { getProductCategories, getProducts, type ProductSort } from "@/lib/queries";
@@ -51,6 +52,7 @@ export default async function TiendaPage({ searchParams }: Props) {
               </Link>
               {categories.map((c) => (
                 <Link key={c.slug} className="tp-chip" href={href(c.slug)} aria-current={categoria === c.slug ? "true" : undefined}>
+                  <CatalogIcon slug={c.slug} size={16} />
                   {c.name}
                 </Link>
               ))}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CatalogIcon } from "@/components/CatalogIcon";
 import { getServiceCatalog } from "@/lib/queries";
 import { formatCLP } from "@/lib/format";
 import { whatsappUrl, WA_COORDINAR } from "@/lib/whatsapp";
@@ -43,6 +44,7 @@ export default async function ServiciosPage() {
           <nav className="tp-chip-nav" aria-label="Categorías de servicio">
             {catalog.map((c) => (
               <a key={c.slug} className="tp-chip" href={`#${c.slug}`}>
+                <CatalogIcon slug={c.slug} size={16} />
                 {c.name}
               </a>
             ))}
@@ -52,6 +54,7 @@ export default async function ServiciosPage() {
             {catalog.map((c) => (
               <section key={c.slug} id={c.slug} className="tp-category-wrap" style={{ marginTop: 0 }} aria-labelledby={`cat-${c.slug}`}>
                 <h2 id={`cat-${c.slug}`} className="tp-display tp-category-heading" style={{ marginBottom: 6 }}>
+                  <CatalogIcon slug={c.slug} size={28} />
                   {c.name}
                 </h2>
                 {c.description && (

@@ -1,11 +1,12 @@
 import Link from "next/link";
-import Image from "next/image";
+import { CatalogIcon } from "@/components/CatalogIcon";
 import { formatCLP } from "@/lib/format";
 import { getFeaturedProducts, getHomeServices } from "@/lib/queries";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { site } from "@/data/site";
 import { WA_CONSULTAR, WA_COORDINAR } from "@/lib/whatsapp";
 import { WorkshopGallery } from "@/components/WorkshopGallery";
+import { AnimatedEmblem } from "@/components/AnimatedEmblem";
 
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
@@ -77,7 +78,7 @@ export default async function HomePage() {
             </div>
 
             <div className="tp-hero-brand">
-              <Image src="/brand/tropicleta-emblema.jpeg" alt="Tropicleta · Taller de bicicletas" width={440} height={440} sizes="(max-width: 719px) 280px, (max-width: 979px) 360px, 440px" preload className="tp-hero-emblem" />
+              <AnimatedEmblem />
             </div>
             <aside className="tp-trust tp-hero-trust" aria-label="Información de atención Tropicleta">
               <div className="tp-trust-item">
@@ -129,6 +130,7 @@ export default async function HomePage() {
             <div className="tp-category-grid">
               {categories.map((c) => (
                 <Link key={c.slug} className="tp-category" href={`/servicios/#${c.slug}`}>
+                  <CatalogIcon slug={c.slug} />
                   {c.name}
                 </Link>
               ))}
