@@ -3,15 +3,19 @@ import { asc, eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { db, schema } from "@/db";
+import { requireAdmin } from "@/lib/auth";
 
 type Props = { params: Promise<{ id: string }> };
 
 export default async function ProductoAdmin({ params }: Props) {
+  await requireAdmin();
   const { id } = await params;
+  const numId = Number(id);
+  if (id !== "nuevo" && (!Number.isInteger(numId) || numId <= 0)) notFound();
   const categories = await db.select().from(schema.productCategories).orderBy(asc(schema.productCategories.sort));
   let product = null;
   if (id !== "nuevo") {
-    [product] = await db.select().from(schema.products).where(eq(schema.products.id, Number(id))).limit(1);
+    [product] = await db.select().from(schema.products).where(eq(schema.products.id, numId)).limit(1);
     if (!product) notFound();
   }
   return (

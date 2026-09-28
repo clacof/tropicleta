@@ -1,22 +1,22 @@
 import Link from "next/link";
-import { count, desc, eq, gte, and, inArray, sum } from "drizzle-orm";
+import { desc, inArray } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { getAccounting } from "@/lib/accounting";
+import { pendingCounts } from "@/lib/admin-queries";
+import { requireAdmin } from "@/lib/auth";
 import { displayPhone, formatCLP, formatDate, formatDateTime } from "@/lib/format";
 
 export default async function AdminHome() {
-  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  const [[newBookings], [toDeliver], [unread], [sales], bookings, orders] = await Promise.all([
-    db.select({ n: count() }).from(schema.bookings).where(eq(schema.bookings.status, "nueva")),
-    db.select({ n: count() }).from(schema.orders).where(inArray(schema.orders.status, ["pagada", "lista"])),
-    db.select({ n: count() }).from(schema.contactMessages).where(eq(schema.contactMessages.read, false)),
-    db
-      .select({ total: sum(schema.orders.total) })
-      .from(schema.orders)
-      .where(and(inArray(schema.orders.status, ["pagada", "lista", "entregada"]), gte(schema.orders.paidAt, monthStart))),
+  await requireAdmin();
+  const [counts, month, bookings, orders] = await Promise.all([
+    pendingCounts(),
+    // Mismo cálculo que Contabilidad: mes calendario en America/Santiago, por fecha de cobro
+    getAccounting(),
     db.select().from(schema.bookings).orderBy(desc(schema.bookings.createdAt)).limit(5),
     db.select().from(schema.orders).where(inArray(schema.orders.status, ["pagada", "lista", "entregada"])).orderBy(desc(schema.orders.createdAt)).limit(5),
   ]);
+  const onlineSales = month.rows.filter((r) => r.orderId !== null).reduce((s, r) => s + r.amount, 0);
 
   return (
     <>
@@ -26,20 +26,20 @@ export default async function AdminHome() {
 
       <div className="tp-stats">
         <div className="tp-stat">
-          <strong>{newBookings.n}</strong>
+          <strong>{counts.bookings}</strong>
           <span>Reservas nuevas</span>
         </div>
         <div className="tp-stat">
-          <strong>{toDeliver.n}</strong>
+          <strong>{counts.orders}</strong>
           <span>Órdenes por entregar</span>
         </div>
         <div className="tp-stat">
-          <strong>{unread.n}</strong>
+          <strong>{counts.messages}</strong>
           <span>Mensajes sin leer</span>
         </div>
         <div className="tp-stat">
-          <strong>{formatCLP(Number(sales.total ?? 0))}</strong>
-          <span>Ventas del mes</span>
+          <strong>{formatCLP(onlineSales)}</strong>
+          <span>Ventas online del mes</span>
         </div>
       </div>
 
@@ -58,7 +58,7 @@ export default async function AdminHome() {
             {bookings.map((b) => (
               <tr key={b.id}>
                 <td>
-                  <Link href={`/admin/reservas/#${b.code}`}>{b.code}</Link>
+                  <Link href={`/admin/reservas/${b.id}/`}>{b.code}</Link>
                 </td>
                 <td>
                   {b.name}

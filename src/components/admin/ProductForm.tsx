@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { saveProduct } from "@/actions/admin";
 import { Field } from "@/components/Field";
 import { SubmitButton } from "@/components/SubmitButton";
+import { ImagesField } from "./ImagesField";
 import type { Product, ProductCategory } from "@/db/schema";
 import type { FormState } from "@/lib/forms";
 
@@ -12,6 +13,11 @@ export function ProductForm({ product, categories }: { product: Product | null; 
   const p = product;
   return (
     <form action={action} className="tp-panel tp-form" style={{ maxWidth: 820 }}>
+      {state.message && (
+        <div className="tp-alert" role="alert">
+          {state.message}
+        </div>
+      )}
       {p && <input type="hidden" name="id" value={p.id} />}
       <div className="tp-form-grid">
         <Field name="name" label="Nombre" state={state} defaultValue={p?.name} required className="tp-span-2" />
@@ -29,22 +35,12 @@ export function ProductForm({ product, categories }: { product: Product | null; 
         <Field name="newCategory" label="…o crear categoría nueva" state={state} optional />
         <Field name="slug" label="URL (slug)" state={state} defaultValue={p?.slug ?? ""} optional hint="Se genera desde el nombre" />
         <Field name="description" label="Descripción" as="textarea" rows={5} state={state} defaultValue={p?.description ?? ""} className="tp-span-2" optional />
-        <Field
-          name="images"
-          label="Imágenes (una URL por línea)"
-          as="textarea"
-          rows={3}
-          state={state}
-          defaultValue={p?.images.join("\n") ?? ""}
-          className="tp-span-2"
-          optional
-          hint="URL pública (https://…) o ruta en /public, ej: /productos/camara.webp"
-        />
+        <ImagesField initial={p?.images ?? []} state={state} />
       </div>
       <div className="tp-options tp-options-2">
         <label className="tp-option">
           <input type="checkbox" name="featured" defaultChecked={p?.featured} />
-          <span>Destacado en la home</span>
+          <span>Destacado en la home (máx. 4)</span>
         </label>
         <label className="tp-option">
           <input type="checkbox" name="active" defaultChecked={p?.active ?? true} />

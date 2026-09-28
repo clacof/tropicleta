@@ -9,7 +9,14 @@ export async function POST(req: NextRequest) {
   const type = body.type ?? url.searchParams.get("type") ?? url.searchParams.get("topic");
   const dataId = String(body.data?.id ?? url.searchParams.get("data.id") ?? url.searchParams.get("id") ?? "");
 
+  // Otros tópicos (merchant_order, etc.) no traen firma: se responden 200 para que MP no reintente.
+  if (type !== "payment" || !dataId) return NextResponse.json({ ok: true, ignored: true });
+
   const secret = process.env.MP_WEBHOOK_SECRET;
+  if (!secret && process.env.NODE_ENV === "production") {
+    console.error("[mp webhook] falta MP_WEBHOOK_SECRET: notificación rechazada");
+    return NextResponse.json({ ok: false }, { status: 503 });
+  }
   if (secret) {
     try {
       WebhookSignatureValidator.validate({
@@ -23,8 +30,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false }, { status: 401 });
     }
   }
-
-  if (type !== "payment" || !dataId) return NextResponse.json({ ok: true, ignored: true });
 
   try {
     await syncMercadoPagoPayment(dataId);

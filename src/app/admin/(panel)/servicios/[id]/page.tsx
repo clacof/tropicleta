@@ -3,15 +3,19 @@ import { asc, eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { ServiceForm } from "@/components/admin/ServiceForm";
 import { db, schema } from "@/db";
+import { requireAdmin } from "@/lib/auth";
 
 type Props = { params: Promise<{ id: string }> };
 
 export default async function ServicioAdmin({ params }: Props) {
+  await requireAdmin();
   const { id } = await params;
+  const numId = Number(id);
+  if (id !== "nuevo" && (!Number.isInteger(numId) || numId <= 0)) notFound();
   const categories = await db.select().from(schema.serviceCategories).orderBy(asc(schema.serviceCategories.sort));
   let service = null;
   if (id !== "nuevo") {
-    [service] = await db.select().from(schema.services).where(eq(schema.services.id, Number(id))).limit(1);
+    [service] = await db.select().from(schema.services).where(eq(schema.services.id, numId)).limit(1);
     if (!service) notFound();
   }
   return (

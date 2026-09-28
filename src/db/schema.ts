@@ -24,6 +24,7 @@ export const cashEntries = pgTable("cash_entries", {
   amount: integer("amount").notNull(),
   method: varchar("method", { length: 30 }).notNull(),
   reference: varchar("reference", { length: 120 }).notNull().default(""),
+  bookingId: integer("booking_id").references(() => bookings.id, { onDelete: "set null" }),
   voidReason: text("void_reason"),
   voidedAt: timestamp("voided_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -108,6 +109,8 @@ export const bookings = pgTable("bookings", {
   pickupAddress: text("pickup_address"),
   notes: text("notes"),
   status: bookingStatus("status").notNull().default("nueva"),
+  internalNotes: text("internal_notes"), // solo visible en el panel
+  quotedPrice: integer("quoted_price"), // presupuesto o precio final acordado (CLP)
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -167,6 +170,26 @@ export const contactMessages = pgTable("contact_messages", {
   email: text("email"),
   message: text("message").notNull(),
   read: boolean("read").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/* ============================ PANEL ============================ */
+
+/** Intentos fallidos de ingreso al panel por IP (compartido entre instancias). */
+export const loginAttempts = pgTable("login_attempts", {
+  key: varchar("key", { length: 80 }).primaryKey(),
+  count: integer("count").notNull().default(0),
+  windowStart: timestamp("window_start", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Historial de cambios hechos desde el panel. */
+export const adminAudit = pgTable("admin_audit", {
+  id: serial("id").primaryKey(),
+  action: varchar("action", { length: 60 }).notNull(),
+  entity: varchar("entity", { length: 40 }).notNull(),
+  entityId: varchar("entity_id", { length: 40 }),
+  summary: text("summary").notNull(),
+  ip: varchar("ip", { length: 64 }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

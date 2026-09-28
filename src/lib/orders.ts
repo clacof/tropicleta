@@ -4,6 +4,7 @@ import { db, schema } from "@/db";
 import { adminEmail, emailLayout, escapeHtml, sendEmail } from "@/lib/email";
 import { displayPhone, formatCLP } from "@/lib/format";
 import { siteUrl } from "@/lib/site-url";
+import { revalidateShopStock } from "@/lib/revalidate";
 
 const { orders, orderItems, products } = schema;
 
@@ -48,7 +49,10 @@ export async function markOrderPaid(
     return true;
   });
 
-  if (changed) await sendOrderEmails(orderId);
+  if (changed) {
+    revalidateShopStock();
+    await sendOrderEmails(orderId);
+  }
   return changed;
 }
 
@@ -110,6 +114,7 @@ export async function syncMercadoPagoPayment(paymentId: string) {
   if (p.status === "approved") {
     if (Math.round(p.transaction_amount ?? 0) !== order.total) {
       console.error(`[mp] monto no coincide en ${order.code}: ${p.transaction_amount} vs ${order.total}`);
+      await flagMercadoPagoIssue(order, "monto_distinto", p, `Mercado Pago aprobó ${formatCLP(Math.round(p.transaction_amount ?? 0))} pero la orden suma ${formatCLP(order.total)}. La orden quedó pendiente: revisar antes de entregar.`);
       return order.code;
     }
     await markOrderPaid(order.id, {
@@ -123,6 +128,35 @@ export async function syncMercadoPagoPayment(paymentId: string) {
       status: p.status,
       status_detail: p.status_detail,
     });
+  } else if (p.status === "refunded" || p.status === "charged_back") {
+    // No se cambia el estado: la contabilidad registra devoluciones como gasto (ver ADMINISTRACION.md).
+    await flagMercadoPagoIssue(order, p.status, p, p.status === "refunded"
+      ? "Mercado Pago informa que el pago fue devuelto. Registra la devolución en Contabilidad y anula la orden si corresponde."
+      : "Mercado Pago informa un contracargo (el cliente desconoció el pago). Revisa el caso en tu cuenta de Mercado Pago.");
   }
   return order.code;
+}
+
+type MpPaymentInfo = { id?: number; status?: string; status_detail?: string; transaction_amount?: number };
+
+/** Guarda una incidencia en paymentDetails y avisa al admin una sola vez por tipo (el webhook se repite). */
+async function flagMercadoPagoIssue(order: typeof orders.$inferSelect, issue: string, p: MpPaymentInfo, message: string) {
+  const details = (order.paymentDetails ?? {}) as { issues?: string[] } & Record<string, unknown>;
+  if (details.issues?.includes(issue)) return;
+  await db
+    .update(orders)
+    .set({
+      updatedAt: new Date(),
+      paymentDetails: {
+        ...details,
+        issues: [...(details.issues ?? []), issue],
+        [`mp_${issue}`]: { paymentId: p.id, status: p.status, status_detail: p.status_detail, amount: p.transaction_amount, at: new Date().toISOString() },
+      },
+    })
+    .where(eq(orders.id, order.id));
+  await sendEmail(
+    adminEmail(),
+    `Revisar orden ${order.code} · Mercado Pago`,
+    emailLayout("Revisar orden", `<p>Orden <b>${order.code}</b> · ${escapeHtml(order.customerName)} · ${escapeHtml(order.customerEmail)}</p><p>${escapeHtml(message)}</p><p>ID de pago Mercado Pago: ${p.id ?? "—"}</p>`),
+  );
 }

@@ -59,7 +59,7 @@ export default async function ProductoPage({ params }: Props) {
 
         <div className="tp-two-col tp-two-col-even">
           <div className="tp-product-gallery">
-            <ProductMedia name={p.name} image={p.images[0]} />
+            <ProductMedia name={p.name} image={p.images[0]} sizes="(max-width: 979px) 100vw, 560px" preload />
             {p.images.length > 1 && (
               <div className="tp-mini-products">
                 {p.images.slice(1).map((img) => (

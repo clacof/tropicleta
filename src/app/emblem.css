@@ -128,6 +128,11 @@
   animation: tp-em-shine 7s ease-in-out 1.9s infinite;
 }
 
+/* Fuera de pantalla (AnimatedEmblem pone data-paused): sin repintar filtros ni mezclas en segundo plano */
+.tp-emblem[data-paused]::before,
+.tp-emblem[data-paused] *,
+.tp-emblem[data-paused] *::before { animation-play-state: paused; }
+
 @media (min-width: 720px) { .tp-emblem { width: min(100%, 360px); } }
 @media (min-width: 980px) { .tp-emblem { width: min(100%, 440px); } }
 

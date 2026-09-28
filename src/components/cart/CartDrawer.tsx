@@ -35,7 +35,7 @@ export function CartDrawer() {
             items.map((i) => (
               <div key={i.productId} className="tp-cart-line">
                 <div className="tp-cart-thumb">
-                  <ProductMedia name={i.name} image={i.image} />
+                  <ProductMedia name={i.name} image={i.image} sizes="64px" />
                 </div>
                 <div>
                   <div className="tp-cart-line-top">

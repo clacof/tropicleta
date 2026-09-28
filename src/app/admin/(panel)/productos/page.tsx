@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
 import { archiveProduct } from "@/actions/admin";
+import { ConfirmSubmit } from "@/components/admin/ConfirmSubmit";
 import { db, schema } from "@/db";
+import { requireAdmin } from "@/lib/auth";
 import { formatCLP } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Productos" };
 
 export default async function ProductosAdmin() {
+  await requireAdmin();
   const rows = await db
     .select({ p: schema.products, c: schema.productCategories })
     .from(schema.products)
@@ -55,9 +58,7 @@ export default async function ProductosAdmin() {
                   {p.active && (
                     <form action={archiveProduct}>
                       <input type="hidden" name="id" value={p.id} />
-                      <button className="tp-link-btn" type="submit">
-                        Archivar
-                      </button>
+                      <ConfirmSubmit message={`¿Archivar “${p.name}”? Dejará de verse en la tienda.`}>Archivar</ConfirmSubmit>
                     </form>
                   )}
                 </td>

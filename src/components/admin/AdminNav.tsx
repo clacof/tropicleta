@@ -11,6 +11,8 @@ const links = [
   { href: "/admin/mensajes/", label: "Mensajes" },
   { href: "/admin/servicios/", label: "Servicios" },
   { href: "/admin/productos/", label: "Productos" },
+  { href: "/admin/categorias/", label: "Categorías" },
+  { href: "/admin/actividad/", label: "Actividad" },
 ];
 
 export function AdminNav({ badges }: { badges: Record<string, number> }) {

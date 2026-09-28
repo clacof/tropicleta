@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
-import { deleteService } from "@/actions/admin";
+import { hideService } from "@/actions/admin";
+import { ConfirmSubmit } from "@/components/admin/ConfirmSubmit";
 import { db, schema } from "@/db";
+import { requireAdmin } from "@/lib/auth";
 import { formatCLP } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Servicios" };
 
 export default async function ServiciosAdmin() {
+  await requireAdmin();
   const rows = await db
     .select({ s: schema.services, c: schema.serviceCategories })
     .from(schema.services)
@@ -50,11 +53,9 @@ export default async function ServiciosAdmin() {
                 <td>{s.active ? "Activo" : "Oculto"}</td>
                 <td className="num">
                   {s.active && (
-                    <form action={deleteService}>
+                    <form action={hideService}>
                       <input type="hidden" name="id" value={s.id} />
-                      <button className="tp-link-btn" type="submit">
-                        Ocultar
-                      </button>
+                      <ConfirmSubmit message={`¿Ocultar “${s.name}”? Dejará de verse en el sitio.`}>Ocultar</ConfirmSubmit>
                     </form>
                   )}
                 </td>

@@ -55,6 +55,15 @@ export function AnimatedEmblem() {
     });
   };
 
+  // Pausa las animaciones infinitas (halo, cadena, rayos, brillo) cuando el emblema sale de pantalla
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver(([entry]) => el.toggleAttribute("data-paused", !entry.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   // Inclinación 3D siguiendo el puntero (solo mouse/trackpad y sin reduced-motion)
   useEffect(() => {
     const el = ref.current;

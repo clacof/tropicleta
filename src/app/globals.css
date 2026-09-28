@@ -527,10 +527,17 @@ img {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(13, 14, 15, 0.86);
-  backdrop-filter: saturate(140%) blur(12px);
-  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  background: rgba(13, 14, 15, 0.96);
   border-bottom: 1px solid var(--tp-border);
+}
+
+/* El blur recalcula en cada frame de scroll: solo en equipos con mouse (escritorio), no en móviles */
+@media (hover: hover) and (pointer: fine) {
+  .tp-header {
+    background: rgba(13, 14, 15, 0.86);
+    backdrop-filter: saturate(140%) blur(12px);
+    -webkit-backdrop-filter: saturate(140%) blur(12px);
+  }
 }
 
 .tp-header-inner {

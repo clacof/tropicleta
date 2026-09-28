@@ -1,31 +1,54 @@
 "use server";
 
-import { eq, sql } from "drizzle-orm";
+import { and, count, eq, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { revalidatePublicData } from "@/lib/revalidate";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { checkPassword, createSession, destroySession, requireAdmin } from "@/lib/auth";
+import { localDate, methods } from "@/lib/accounting-validation";
+import { audit } from "@/lib/audit";
+import { checkPassword, clientIp, createSession, destroySession, requireAdmin } from "@/lib/auth";
+import { isForeignKeyViolation, isUniqueViolation } from "@/lib/db-errors";
+import { emailLayout, escapeHtml, sendEmail } from "@/lib/email";
+import { formatCLP, slugify } from "@/lib/format";
 import { formToObject, zodErrors, type FormState } from "@/lib/forms";
-import { slugify } from "@/lib/format";
+import { clearLoginFailures, loginBlocked, recordLoginFailure } from "@/lib/login-limit";
+import { bookingStatusMessage, canTransitionOrder, orderStatusMessage } from "@/lib/order-status";
+import { uploadImage, validateImages } from "@/lib/upload";
+
+/** Límites de destacados: los que caben en la home. */
+const MAX_FEATURED_SERVICES = 3;
+const MAX_FEATURED_PRODUCTS = 4;
+
+const idSchema = z.coerce.number().int().positive();
+
+function parseId(fd: FormData, key = "id") {
+  const r = idSchema.safeParse(fd.get(key));
+  if (!r.success) throw new Error("ID inválido");
+  return r.data;
+}
+
+async function notify(to: string | null | undefined, subject: string, text: string | null) {
+  if (!to || !text) return;
+  await sendEmail(to, subject, emailLayout(subject, `<p>${escapeHtml(text)}</p>`));
+}
 
 /* ---------------------------- Sesión ---------------------------- */
 
-const attempts = new Map<string, { n: number; t: number }>();
-
 export async function login(_prev: FormState, fd: FormData): Promise<FormState> {
   const password = String(fd.get("password") ?? "");
-  // Freno simple a fuerza bruta (por instancia)
-  const a = attempts.get("admin") ?? { n: 0, t: Date.now() };
-  if (Date.now() - a.t > 15 * 60_000) Object.assign(a, { n: 0, t: Date.now() });
-  if (a.n >= 10) return { message: "Demasiados intentos. Espera 15 minutos." };
+  // Freno a fuerza bruta por IP, guardado en la BD para que valga entre instancias
+  const ip = await clientIp();
+  if (await loginBlocked(ip)) return { message: "Demasiados intentos. Espera 15 minutos." };
 
   if (!checkPassword(password)) {
-    attempts.set("admin", { ...a, n: a.n + 1 });
+    await recordLoginFailure(ip);
     return { message: "Contraseña incorrecta" };
   }
-  attempts.delete("admin");
+  await clearLoginFailures(ip);
   await createSession();
+  await audit("login", "sesion", null, "Ingreso al panel");
   redirect("/admin/");
 }
 
@@ -34,29 +57,141 @@ export async function logout() {
   redirect("/admin/login/");
 }
 
-/* ---------------------------- Estados ---------------------------- */
+/* ---------------------------- Reservas ---------------------------- */
 
-export async function updateBookingStatus(fd: FormData) {
+export async function updateBookingStatus(_prev: FormState, fd: FormData): Promise<FormState> {
   await requireAdmin();
-  const id = Number(fd.get("id"));
+  const id = parseId(fd);
   const status = z.enum(schema.bookingStatus.enumValues).parse(fd.get("status"));
-  await db.update(schema.bookings).set({ status }).where(eq(schema.bookings.id, id));
+  const [b] = await db
+    .update(schema.bookings)
+    .set({ status })
+    .where(and(eq(schema.bookings.id, id), ne(schema.bookings.status, status)))
+    .returning();
+  if (!b) return { ok: true, message: "Sin cambios" };
+  await Promise.all([
+    notify(b.email, `Solicitud ${b.code}`, bookingStatusMessage(status, b.code)),
+    audit("estado", "reserva", b.id, `${b.code} → ${status}`),
+  ]);
   revalidatePath("/admin", "layout");
+  return { ok: true, message: "Guardado" };
 }
 
-export async function updateOrderStatus(fd: FormData) {
+const bookingDetailsSchema = z.object({
+  internalNotes: z.string().trim().max(4000).optional(),
+  quotedPrice: z
+    .string()
+    .trim()
+    .transform((v) => (v === "" ? null : Number(v.replace(/\D/g, ""))))
+    .pipe(z.number().int().min(0).max(100_000_000).nullable()),
+});
+
+export async function saveBookingDetails(_prev: FormState, fd: FormData): Promise<FormState> {
   await requireAdmin();
-  const id = Number(fd.get("id"));
-  const status = z.enum(["pagada", "lista", "entregada", "anulada"]).parse(fd.get("status"));
-  await db.update(schema.orders).set({ status, updatedAt: new Date(),
-    ...(status === "pagada" ? { paidAt: sql`coalesce(${schema.orders.paidAt}, now())` } : {}),
-  }).where(eq(schema.orders.id, id));
+  const id = parseId(fd);
+  const values = formToObject(fd);
+  const parsed = bookingDetailsSchema.safeParse(values);
+  if (!parsed.success) return { errors: zodErrors(parsed.error), values };
+  const [b] = await db
+    .update(schema.bookings)
+    .set({ internalNotes: parsed.data.internalNotes || null, quotedPrice: parsed.data.quotedPrice })
+    .where(eq(schema.bookings.id, id))
+    .returning({ code: schema.bookings.code });
+  if (!b) return { message: "La reserva no existe." };
+  await audit("editar", "reserva", id, `${b.code}: notas/presupuesto`);
   revalidatePath("/admin", "layout");
+  return { ok: true, message: "Guardado" };
 }
+
+const bookingPaymentSchema = z.object({
+  requestId: z.uuid(),
+  date: z.iso.date().refine((v) => v <= localDate(), "La fecha no puede ser futura"),
+  amount: z.coerce.number({ error: "Monto requerido" }).int().min(1, "Monto mayor a cero").max(2_000_000_000),
+  method: z.enum(methods),
+  reference: z.string().trim().max(120).default(""),
+});
+
+/** Registra el cobro de una reserva como ingreso en el libro de caja, enlazado a la reserva. */
+export async function registerBookingPayment(_prev: FormState, fd: FormData): Promise<FormState> {
+  await requireAdmin();
+  const id = parseId(fd);
+  const values = formToObject(fd);
+  const parsed = bookingPaymentSchema.safeParse(values);
+  if (!parsed.success) return { errors: zodErrors(parsed.error), values };
+  const [b] = await db.select().from(schema.bookings).where(eq(schema.bookings.id, id)).limit(1);
+  if (!b) return { message: "La reserva no existe." };
+  const d = parsed.data;
+  const inserted = await db
+    .insert(schema.cashEntries)
+    .values({
+      requestId: d.requestId,
+      date: d.date,
+      type: "ingreso",
+      category: "Taller",
+      description: `Reserva ${b.code} · ${b.name}`,
+      amount: d.amount,
+      method: d.method,
+      reference: d.reference || b.code,
+      bookingId: b.id,
+    })
+    .onConflictDoNothing({ target: schema.cashEntries.requestId })
+    .returning({ id: schema.cashEntries.id });
+  if (inserted.length) await audit("cobro", "reserva", b.id, `${b.code}: ${formatCLP(d.amount)} ${d.method}`);
+  revalidatePath("/admin", "layout");
+  return { ok: true, message: "Cobro registrado en contabilidad." };
+}
+
+/* ---------------------------- Órdenes ---------------------------- */
+
+export async function updateOrderStatus(_prev: FormState, fd: FormData): Promise<FormState> {
+  await requireAdmin();
+  const id = parseId(fd);
+  const status = z.enum(schema.orderStatus.enumValues).parse(fd.get("status"));
+  const restock = fd.get("restock") === "on";
+
+  const result = await db.transaction(async (tx) => {
+    const [o] = await tx.select().from(schema.orders).where(eq(schema.orders.id, id)).limit(1);
+    if (!o) return { error: "La orden no existe." };
+    if (o.status === status) return { error: null, order: null };
+    if (!canTransitionOrder(o.status, status)) return { error: "Ese cambio de estado no está permitido." };
+
+    // El where con el estado leído evita pisar un cambio simultáneo
+    const [updated] = await tx
+      .update(schema.orders)
+      .set({ status, updatedAt: new Date() })
+      .where(and(eq(schema.orders.id, id), eq(schema.orders.status, o.status)))
+      .returning();
+    if (!updated) return { error: "La orden cambió mientras tanto. Recarga la página." };
+
+    if (status === "anulada" && restock) {
+      const items = await tx.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, id));
+      for (const it of items) {
+        if (!it.productId) continue;
+        await tx
+          .update(schema.products)
+          .set({ stock: sql`${schema.products.stock} + ${it.quantity}` })
+          .where(eq(schema.products.id, it.productId));
+      }
+    }
+    return { error: null, order: updated, from: o.status };
+  });
+
+  if (result.error) return { message: result.error };
+  if (!result.order) return { ok: true, message: "Sin cambios" };
+  const o = result.order;
+  await Promise.all([
+    notify(o.customerEmail, `Pedido ${o.code}`, orderStatusMessage(status, o.code, o.deliveryMethod)),
+    audit("estado", "orden", o.id, `${o.code}: ${result.from} → ${status}${status === "anulada" && restock ? " (stock repuesto)" : ""}`),
+  ]);
+  revalidatePublicData();
+  return { ok: true, message: "Estado actualizado" };
+}
+
+/* ---------------------------- Mensajes ---------------------------- */
 
 export async function toggleMessageRead(fd: FormData) {
   await requireAdmin();
-  const id = Number(fd.get("id"));
+  const id = parseId(fd);
   const read = fd.get("read") === "true";
   await db.update(schema.contactMessages).set({ read }).where(eq(schema.contactMessages.id, id));
   revalidatePath("/admin", "layout");
@@ -106,22 +241,34 @@ export async function saveService(_prev: FormState, fd: FormData): Promise<FormS
     active: d.active === "on",
     sort: d.sort,
   };
+  if (data.featured && data.active) {
+    const s = schema.services;
+    const [{ n }] = await db
+      .select({ n: count() })
+      .from(s)
+      .where(and(eq(s.featured, true), eq(s.active, true), d.id ? ne(s.id, d.id) : undefined));
+    if (n >= MAX_FEATURED_SERVICES)
+      return { errors: { featured: `Ya hay ${MAX_FEATURED_SERVICES} servicios destacados. Quita uno antes.` }, message: `Ya hay ${MAX_FEATURED_SERVICES} servicios destacados. Quita uno antes.`, values };
+  }
   try {
     if (d.id) await db.update(schema.services).set(data).where(eq(schema.services.id, d.id));
     else await db.insert(schema.services).values(data);
   } catch (e) {
-    if (String(e).includes("unique")) return { errors: { slug: "Ya existe un servicio con ese slug" }, values };
+    if (isUniqueViolation(e)) return { errors: { slug: "Ya existe un servicio con ese slug" }, values };
     throw e;
   }
-  revalidatePath("/", "layout");
+  await audit(d.id ? "editar" : "crear", "servicio", d.id ?? null, data.name);
+  revalidatePublicData();
   redirect("/admin/servicios/");
 }
 
-export async function deleteService(fd: FormData) {
+export async function hideService(fd: FormData) {
   await requireAdmin();
+  const id = parseId(fd);
   // Se desactiva en vez de borrar para no romper enlaces ni historial
-  await db.update(schema.services).set({ active: false }).where(eq(schema.services.id, Number(fd.get("id"))));
-  revalidatePath("/", "layout");
+  const [s] = await db.update(schema.services).set({ active: false }).where(eq(schema.services.id, id)).returning();
+  if (s) await audit("ocultar", "servicio", id, s.name);
+  revalidatePublicData();
 }
 
 /* ---------------------------- Productos ---------------------------- */
@@ -151,6 +298,22 @@ export async function saveProduct(_prev: FormState, fd: FormData): Promise<FormS
   if (!parsed.success) return { errors: zodErrors(parsed.error), values };
   const d = parsed.data;
 
+  const files = fd.getAll("uploads").filter((f): f is File => f instanceof File && f.size > 0);
+  const fileError = validateImages(files);
+  if (fileError) return { errors: { images: fileError }, values };
+
+  const featured = d.featured === "on";
+  const active = d.active === "on";
+  if (featured && active) {
+    const p = schema.products;
+    const [{ n }] = await db
+      .select({ n: count() })
+      .from(p)
+      .where(and(eq(p.featured, true), eq(p.active, true), d.id ? ne(p.id, d.id) : undefined));
+    if (n >= MAX_FEATURED_PRODUCTS)
+      return { errors: { featured: `Ya hay ${MAX_FEATURED_PRODUCTS} productos destacados. Quita uno antes.` }, message: `Ya hay ${MAX_FEATURED_PRODUCTS} productos destacados. Quita uno antes.`, values };
+  }
+
   let categoryId = d.categoryId;
   if (d.newCategory) {
     const [cat] = await db
@@ -161,36 +324,102 @@ export async function saveProduct(_prev: FormState, fd: FormData): Promise<FormS
     categoryId = cat.id;
   }
 
+  const slug = slugify(d.slug || d.name);
   const images = (d.images ?? "")
     .split("\n")
     .map((s) => s.trim())
     .filter((s) => /^https?:\/\/|^\//.test(s));
+  try {
+    for (const f of files) images.push(await uploadImage(f, slug));
+  } catch (e) {
+    console.error("[upload]", e);
+    return { errors: { images: "No se pudo subir la imagen. Intenta nuevamente." }, values };
+  }
 
   const data = {
     name: d.name,
-    slug: slugify(d.slug || d.name),
+    slug,
     categoryId,
     description: d.description || null,
     price: d.price!,
     compareAtPrice: d.compareAtPrice,
     stock: d.stock,
     images,
-    featured: d.featured === "on",
-    active: d.active === "on",
+    featured,
+    active,
   };
   try {
     if (d.id) await db.update(schema.products).set(data).where(eq(schema.products.id, d.id));
     else await db.insert(schema.products).values(data);
   } catch (e) {
-    if (String(e).includes("unique")) return { errors: { slug: "Ya existe un producto con ese slug" }, values };
+    // Las imágenes ya subidas se conservan en el formulario para no perderlas
+    if (isUniqueViolation(e)) return { errors: { slug: "Ya existe un producto con ese slug" }, values: { ...values, images: images.join("\n") } };
     throw e;
   }
-  revalidatePath("/", "layout");
+  await audit(d.id ? "editar" : "crear", "producto", d.id ?? null, `${data.name} · stock ${data.stock} · ${formatCLP(data.price)}`);
+  revalidatePublicData();
   redirect("/admin/productos/");
 }
 
 export async function archiveProduct(fd: FormData) {
   await requireAdmin();
-  await db.update(schema.products).set({ active: false }).where(eq(schema.products.id, Number(fd.get("id"))));
-  revalidatePath("/", "layout");
+  const id = parseId(fd);
+  const [p] = await db.update(schema.products).set({ active: false }).where(eq(schema.products.id, id)).returning();
+  if (p) await audit("archivar", "producto", id, p.name);
+  revalidatePublicData();
+}
+
+/* ---------------------------- Categorías ---------------------------- */
+
+const categorySchema = z.object({
+  kind: z.enum(["producto", "servicio"]),
+  id: z.coerce.number().int().positive().optional(),
+  name: z.string().trim().min(2, "Nombre requerido").max(60),
+  slug: z.string().trim().max(60).optional(),
+  description: z.string().trim().max(500).optional(),
+  sort: z.coerce.number().int().default(0),
+});
+
+export async function saveCategory(_prev: FormState, fd: FormData): Promise<FormState> {
+  await requireAdmin();
+  const values = formToObject(fd);
+  const parsed = categorySchema.safeParse(values);
+  if (!parsed.success) return { errors: zodErrors(parsed.error), message: Object.values(zodErrors(parsed.error))[0], values };
+  const d = parsed.data;
+  const base = { name: d.name, slug: slugify(d.slug || d.name).slice(0, 60), sort: d.sort };
+  try {
+    if (d.kind === "producto") {
+      const t = schema.productCategories;
+      if (d.id) await db.update(t).set(base).where(eq(t.id, d.id));
+      else await db.insert(t).values(base);
+    } else {
+      const t = schema.serviceCategories;
+      const data = { ...base, description: d.description || null };
+      if (d.id) await db.update(t).set(data).where(eq(t.id, d.id));
+      else await db.insert(t).values(data);
+    }
+  } catch (e) {
+    if (isUniqueViolation(e)) return { message: "Ya existe una categoría con ese slug.", values };
+    throw e;
+  }
+  await audit(d.id ? "editar" : "crear", `categoría ${d.kind}`, d.id ?? null, d.name);
+  revalidatePublicData();
+  return { ok: true, message: "Guardado" };
+}
+
+export async function deleteCategory(_prev: FormState, fd: FormData): Promise<FormState> {
+  await requireAdmin();
+  const id = parseId(fd);
+  const kind = z.enum(["producto", "servicio"]).parse(fd.get("kind"));
+  try {
+    const t = kind === "producto" ? schema.productCategories : schema.serviceCategories;
+    // Los productos quedan "sin categoría" (FK set null); los servicios la bloquean (FK restrict)
+    const [c] = await db.delete(t).where(eq(t.id, id)).returning({ name: t.name });
+    if (c) await audit("eliminar", `categoría ${kind}`, id, c.name);
+  } catch (e) {
+    if (isForeignKeyViolation(e)) return { message: "Tiene servicios asociados: muévelos a otra categoría antes de eliminarla." };
+    throw e;
+  }
+  revalidatePublicData();
+  return { ok: true };
 }

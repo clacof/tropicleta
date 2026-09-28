@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { count, eq, inArray } from "drizzle-orm";
 import { logout } from "@/actions/admin";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { BrandLogo } from "@/components/BrandLogo";
-import { db, schema } from "@/db";
+import { pendingCounts } from "@/lib/admin-queries";
 import { requireAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -12,11 +11,7 @@ export const metadata: Metadata = { title: { default: "Panel", template: "%s · 
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();
-  const [[b], [o], [m]] = await Promise.all([
-    db.select({ n: count() }).from(schema.bookings).where(eq(schema.bookings.status, "nueva")),
-    db.select({ n: count() }).from(schema.orders).where(inArray(schema.orders.status, ["pagada"])),
-    db.select({ n: count() }).from(schema.contactMessages).where(eq(schema.contactMessages.read, false)),
-  ]);
+  const n = await pendingCounts();
 
   return (
     <div className="tp-admin">
@@ -24,7 +19,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
         <Link href="/admin/" className="tp-logo" style={{ fontSize: 22 }}>
           <BrandLogo />
         </Link>
-        <AdminNav badges={{ "/admin/reservas/": b.n, "/admin/ordenes/": o.n, "/admin/mensajes/": m.n }} />
+        <AdminNav badges={{ "/admin/reservas/": n.bookings, "/admin/ordenes/": n.orders, "/admin/mensajes/": n.messages }} />
         <div style={{ display: "flex", gap: 8, marginTop: 18, flexWrap: "wrap" }}>
           <Link className="tp-btn tp-btn-secondary tp-btn-sm" href="/" target="_blank">
             Ver sitio

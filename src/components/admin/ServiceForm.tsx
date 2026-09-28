@@ -12,6 +12,11 @@ export function ServiceForm({ service, categories }: { service: Service | null; 
   const s = service;
   return (
     <form action={action} className="tp-panel tp-form" style={{ maxWidth: 820 }}>
+      {state.message && (
+        <div className="tp-alert" role="alert">
+          {state.message}
+        </div>
+      )}
       {s && <input type="hidden" name="id" value={s.id} />}
       <div className="tp-form-grid">
         <Field name="name" label="Nombre" state={state} defaultValue={s?.name} required />
@@ -49,7 +54,7 @@ export function ServiceForm({ service, categories }: { service: Service | null; 
         </label>
         <label className="tp-option">
           <input type="checkbox" name="featured" defaultChecked={s?.featured} />
-          <span>Destacado en la home</span>
+          <span>Destacado en la home (máx. 3)</span>
         </label>
         <label className="tp-option">
           <input type="checkbox" name="active" defaultChecked={s?.active ?? true} />
