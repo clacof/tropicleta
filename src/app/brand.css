@@ -2,7 +2,12 @@
 .tp-brand-mascot { width: 48px; height: auto; transform-origin: 50% 85%; }
 .tp-logo:hover .tp-brand-mascot, .tp-logo:focus-visible .tp-brand-mascot { animation: tp-em-bite .55s ease-in-out; }
 .tp-logo { padding-top: 0; flex-shrink: 0; }
-.tp-header-inner { min-height: 84px; height: auto; padding-block: 10px; }
+:root { --tp-header-h: 104px; }
+.tp-header-inner { min-height: var(--tp-header-h); height: auto; padding-block: 12px; }
+.tp-header .tp-brand-mascot { width: 72px; flex-shrink: 0; }
+.tp-header .tp-brand-lockup { gap: 12px; }
+.tp-header .tp-logo { font-size: 34px; }
+.tp-header-actions { flex-shrink: 0; }
 .tp-footer-logo { display: inline-block; }
 .tp-footer-logo img { display: block; width: 142px; height: auto; border-radius: 0; }
 .tp-hero-brand { display: flex; align-items: center; justify-content: center; }
@@ -10,14 +15,22 @@
 .tp-admin-side .tp-brand-lockup { gap: 8px; font-size: 20px; }
 .tp-admin-side .tp-brand-mascot { width: 40px; }
 @media (min-width: 980px) {
-  .tp-hero-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: center; }
+  .tp-hero-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: center; }
 }
-@media (min-width: 980px) and (max-width: 1199px) { .tp-header-cta { display: none; } }
-@media (max-width: 420px) {
-  .tp-header .tp-logo { font-size: 22px; }
-  .tp-header .tp-brand-lockup { gap: 7px; }
-  .tp-header .tp-brand-mascot { width: 39px; }
-  .tp-header-inner { gap: 10px; }
+@media (min-width: 980px) and (max-width: 1279px) { .tp-header-cta { display: none; } }
+@media (max-width: 719px) {
+  :root { --tp-header-h: 92px; }
+  .tp-header .tp-logo { font-size: 28px; }
+  .tp-header .tp-brand-lockup { gap: 8px; }
+  .tp-header .tp-brand-mascot { width: 60px; }
+  .tp-header-inner { gap: 8px; }
+  .tp-header-actions { gap: 6px; }
+}
+@media (max-width: 379px) {
+  .tp-header .tp-shell { width: calc(100% - 24px); }
+  .tp-header .tp-logo { font-size: 23px; }
+  .tp-header .tp-brand-mascot { width: 54px; }
+  .tp-header .tp-brand-lockup { gap: 6px; }
 }
 .tp-drawer-close{display:grid;place-items:center;flex-shrink:0;width:44px;height:44px;border:1px solid #555;border-radius:50%;background:#171717;color:#fff;font-size:30px;cursor:pointer}
 .tp-drawer-close:hover{border-color:#ff9800;color:#ff9800}
@@ -36,6 +49,6 @@
 @media(max-width:979px){.tp-workshop-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tp-workshop-heading{align-items:flex-start;flex-direction:column}}
 @media(max-width:639px){.tp-workshop-grid{grid-template-columns:1fr}}
 
-.tp-official-emblem { display: block; width: min(100%, 280px); height: auto; }
-@media (min-width: 720px) { .tp-official-emblem { width: min(100%, 360px); } }
-@media (min-width: 980px) { .tp-official-emblem { width: min(100%, 440px); } }
+.tp-official-emblem { display: block; width: min(100%, 360px); height: auto; }
+@media (min-width: 720px) { .tp-official-emblem { width: min(100%, 440px); } }
+@media (min-width: 980px) { .tp-official-emblem { width: min(100%, 520px); } }

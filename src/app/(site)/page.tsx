@@ -78,7 +78,7 @@ export default async function HomePage() {
             </div>
 
             <div className="tp-hero-brand">
-              <Image src="/brand/sello-oficial.webp" alt="Tropicleta · Taller de bicicletas" width={960} height={961} sizes="(max-width: 719px) 280px, (max-width: 979px) 360px, 440px" className="tp-official-emblem" preload />
+              <Image src="/brand/sello-oficial.webp" alt="Tropicleta · Taller de bicicletas" width={960} height={961} sizes="(max-width: 719px) 90vw, (max-width: 979px) 440px, 520px" className="tp-official-emblem" preload />
             </div>
             <aside className="tp-trust tp-hero-trust" aria-label="Información de atención Tropicleta">
               <div className="tp-trust-item">
