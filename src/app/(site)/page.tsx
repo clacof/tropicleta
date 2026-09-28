@@ -5,6 +5,7 @@ import { getFeaturedProducts, getHomeServices } from "@/lib/queries";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { site } from "@/data/site";
 import { WA_CONSULTAR, WA_COORDINAR } from "@/lib/whatsapp";
+import { WorkshopGallery } from "@/components/WorkshopGallery";
 
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
@@ -169,13 +170,13 @@ export default async function HomePage() {
                 <>
                   <div className="tp-shop-placeholder">
                     <div>
-                      <strong>Espacio preparado para productos destacados</strong>
+                      <strong>Encuentra lo que necesita tu bicicleta</strong>
                       <br />
                       <br />
-                      Se conectará directamente con la tienda.
+                      Escríbenos para consultar productos y disponibilidad.
                     </div>
                   </div>
-                  <p className="tp-shop-note">Este bloque desaparece cuando conectemos los productos reales.</p>
+                  <a className="tp-btn tp-btn-secondary" href={WA_CONSULTAR} target="_blank" rel="noopener">Consultar productos</a>
                 </>
               )}
             </div>
@@ -184,6 +185,7 @@ export default async function HomePage() {
       </section>
 
       {/* ================= CONVERSIÓN LOCAL ================= */}
+      <WorkshopGallery />
       <section className="tp-section">
         <div className="tp-shell">
           <div className="tp-local-box">

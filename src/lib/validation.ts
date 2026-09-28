@@ -59,7 +59,7 @@ export const bookingSchema = z
       .pipe(z.array(z.string().min(1)).min(1, "Elige al menos un servicio").max(10)),
     preferredDate: z
       .string({ error: "Elige una fecha" })
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Elige una fecha")
+      .pipe(z.iso.date("Elige una fecha válida"))
       .refine((d) => d > todayInChile(), "Elige una fecha desde mañana"),
     timeSlot: z.enum(["manana", "tarde"], { error: "Elige un bloque" }),
     pickup: z

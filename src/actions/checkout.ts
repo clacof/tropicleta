@@ -19,6 +19,15 @@ export type CheckoutState = FormState & {
 };
 
 export async function startCheckout(_prev: CheckoutState, fd: FormData): Promise<CheckoutState> {
+  try {
+    return await checkout(fd);
+  } catch (error) {
+    console.error("[checkout] no se pudo preparar la compra", error);
+    return { message: "No pudimos preparar tu compra. Tu carrito se conserva; vuelve a intentarlo en unos minutos.", values: formToObject(fd) };
+  }
+}
+
+async function checkout(fd: FormData): Promise<CheckoutState> {
   const values = formToObject(fd);
   const parsed = checkoutSchema.safeParse(values);
   if (!parsed.success) return { errors: zodErrors(parsed.error), values };
@@ -31,6 +40,8 @@ export async function startCheckout(_prev: CheckoutState, fd: FormData): Promise
   // 1) Recalcular todo en el servidor desde la BD (nunca confiar en precios del cliente)
   const merged = new Map<number, number>();
   for (const i of d.items) merged.set(i.productId, (merged.get(i.productId) ?? 0) + i.quantity);
+  if ([...merged.values()].some((quantity) => quantity > 10))
+    return { message: "El máximo por producto es 10 unidades. Revisa tu carrito.", values };
   const dbProducts = await getProductsByIds([...merged.keys()]);
 
   const stockIssues: { productId: number; available: number }[] = [];
@@ -53,7 +64,8 @@ export async function startCheckout(_prev: CheckoutState, fd: FormData): Promise
   const code = shortCode("TPC", 10); // ≤ 26 caracteres para Webpay
 
   // 2) Crear la orden pendiente
-  const [order] = await db
+  const order = await db.transaction(async (tx) => {
+  const [created] = await tx
     .insert(schema.orders)
     .values({
       code,
@@ -70,9 +82,11 @@ export async function startCheckout(_prev: CheckoutState, fd: FormData): Promise
       paymentMethod: d.paymentMethod,
     })
     .returning();
-  await db.insert(schema.orderItems).values(
-    lines.map((l) => ({ orderId: order.id, productId: l.product.id, name: l.product.name, unitPrice: l.product.price, quantity: l.quantity })),
+  await tx.insert(schema.orderItems).values(
+    lines.map((l) => ({ orderId: created.id, productId: l.product.id, name: l.product.name, unitPrice: l.product.price, quantity: l.quantity })),
   );
+  return created;
+  });
 
   // 3) Iniciar el pago
   try {

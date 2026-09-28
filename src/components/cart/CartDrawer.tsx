@@ -18,8 +18,8 @@ export function CartDrawer() {
           <h2 id="tp-cart-title" className="tp-display">
             Tu carrito
           </h2>
-          <button type="button" className="tp-menu-toggle" aria-expanded="true" aria-label="Cerrar carrito" onClick={close}>
-            <span />
+          <button type="button" className="tp-drawer-close" aria-label="Cerrar carrito" onClick={close}>
+            <span aria-hidden="true">×</span>
           </button>
         </div>
 
