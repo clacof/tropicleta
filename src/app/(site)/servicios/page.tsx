@@ -6,6 +6,9 @@ import { matchesSearch } from "@/lib/catalog-search";
 import { getServiceCatalog } from "@/lib/queries";
 import { formatCLP } from "@/lib/format";
 import { whatsappUrl, WA_COORDINAR } from "@/lib/whatsapp";
+import { PickupRates } from "@/components/MobileWorkshop";
+
+const posters: Record<string, number> = { mantenciones: 1, ruedas: 2, suspensiones: 3, "retiro-entrega": 4, ejes: 5, transmision: 6, scooters: 8 };
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +78,7 @@ export default async function ServiciosPage({ searchParams }: { searchParams: Pr
                     {c.description}
                   </p>
                 )}
+                {posters[c.slug] && <a className="tp-catalog-poster-link" href={`/catalogo/${posters[c.slug]}.jpg`} target="_blank" rel="noopener">Ver lámina del catálogo ↗</a>}
 
                 {c.services.length > 0 ? (
                   <div className="tp-service-list">
@@ -116,6 +120,7 @@ export default async function ServiciosPage({ searchParams }: { searchParams: Pr
           </div>
         </div>
       </section>
+      {!query && <PickupRates />}
     </>
   );
 }

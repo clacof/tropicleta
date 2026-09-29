@@ -7,6 +7,7 @@ import { site } from "@/data/site";
 import { WA_CONSULTAR, WA_COORDINAR } from "@/lib/whatsapp";
 import { WorkshopGallery } from "@/components/WorkshopGallery";
 import { AnimatedEmblem } from "@/components/AnimatedEmblem";
+import { MobileWorkshop, PickupRates } from "@/components/MobileWorkshop";
 
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
@@ -144,8 +145,9 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <MobileWorkshop />
       {/* ================= TIENDA ================= */}
-      <section className="tp-section tp-shop">
+      {featuredProducts.length > 0 && <section className="tp-section tp-shop">
         <div className="tp-shell">
           <div className="tp-shop-layout">
             <div>
@@ -184,10 +186,11 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* ================= CONVERSIÓN LOCAL ================= */}
       <WorkshopGallery />
+      <PickupRates />
       <section className="tp-section">
         <div className="tp-shell">
           <div className="tp-local-box">

@@ -29,6 +29,13 @@
       "when": 1790562089487,
       "tag": "0003_admin_panel",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790712000000,
+      "tag": "0004_official_catalog",
+      "breakpoints": true
     }
   ]
 }

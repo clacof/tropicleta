@@ -13,9 +13,9 @@ export function WorkshopGallery() {
   return <section className="tp-section tp-workshop" aria-labelledby="workshop-title">
     <div className="tp-shell">
       <div className="tp-workshop-heading">
-        <div><span className="tp-kicker">Desde nuestro Instagram</span>
-          <h2 id="workshop-title" className="tp-display tp-section-title">Así se vive Tropicleta.</h2>
-          <p className="tp-section-intro">Bicicletas reales, trabajo de taller y comunidad ciclista en Atacama.</p>
+        <div><span className="tp-kicker">Comunidad Tropicleta · Atacama</span>
+          <h2 id="workshop-title" className="tp-display tp-section-title">Bicicletas mueven historias.</h2>
+          <p className="tp-section-intro">Desde el cuidado de una bici en Tierra Amarilla hasta la mecánica en Little MTB: el taller es un punto de encuentro para quienes disfrutan pedalear. Conoce nuestro trabajo, comparte tu próxima ruta y sigue las historias de la comunidad en Instagram.</p>
         </div>
         <a className="tp-btn tp-btn-secondary" href="https://www.instagram.com/tropicleta/" target="_blank" rel="noopener noreferrer">Seguir a @tropicleta ↗</a>
       </div>

@@ -30,7 +30,7 @@ export const getServiceCatalog = unstable_cache(
     ]);
     return cats.map((c) => ({ ...c, services: rows.filter((s) => s.categoryId === c.id) }));
   },
-  ["service-catalog-v2"],
+  ["service-catalog-v3"],
   catalogCache,
 );
 
@@ -44,7 +44,7 @@ export const getService = unstable_cache(
       .limit(1);
     return rows[0] ?? null;
   },
-  ["service-v2"],
+  ["service-v3"],
   catalogCache,
 );
 
@@ -77,7 +77,7 @@ const getHomeServicesFromDb = unstable_cache(
       categories: cats.map((c) => ({ slug: c.slug, name: c.name })),
     };
   },
-  ["home-services-v2"],
+  ["home-services-v3"],
   catalogCache,
 );
 

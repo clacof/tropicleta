@@ -62,7 +62,7 @@ export default async function ServicioPage({ params }: Props) {
             </div>
             {s.duration && <p className="tp-muted tp-small">Tiempo estimado: {s.duration}</p>}
             <p className="tp-muted tp-small">
-              El precio final se confirma tras el diagnóstico gratuito. Repuestos se cotizan aparte.
+              Confirma alcance y disponibilidad al coordinar. Los repuestos o trabajos adicionales no indicados en la ficha se cotizan aparte.
             </p>
             <div className="tp-stack" style={{ marginTop: 18 }}>
               <Link className="tp-btn tp-btn-primary tp-btn-block" href={`/agendar/?servicio=${s.slug}`}>

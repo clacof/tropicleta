@@ -1,6 +1,10 @@
 # Catálogo del taller
 
-El despliegue completa 29 servicios en las ocho categorías. Conserva los precios confirmados de los tres servicios originales; los servicios adicionales quedan a cotizar, sin plazos prometidos. Las fichas existentes conservan los cambios del administrador.
+El catálogo reúne 39 servicios en ocho categorías. La migración `0004_official_catalog` incorpora una sola vez los nombres, precios y alcances de 24 fichas confirmadas por las láminas del 29/09/2026. Conserva los identificadores y el estado de publicación de las fichas existentes; los otros 15 servicios siguen a cotizar. Las publicaciones posteriores conservan las ediciones del administrador.
+
+Las ocho láminas originales se encuentran en `public/catalogo/`. Retiro y entrega tiene tarifas diferenciadas por zona y por trayecto; no modifica los costos de despacho de la tienda. La mantención completa explicita las exclusiones del catálogo; armado de rueda indica rayos aparte y freno de scooter indica valor por unidad.
+
+Los iconos de navegador proceden del PNG transparente oficial Recurso 22, correspondiente a la mascota del PDF Recurso 35. Se incluyen PNG cuadrado de 96 px, Apple de 180 px y favicon ICO de 64 px. No se modifica el dibujo original.
 
 También prepara 16 productos como borradores: precio por definir, stock cero y sin publicación. Sus ilustraciones son referenciales. En `/admin/productos/`, revisar la marca, descripción, compatibilidad, imágenes, precio y stock antes de marcar **Publicado**. Se pueden guardar avances sin precio; publicar requiere un precio mayor que cero.
 

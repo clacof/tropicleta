@@ -8,6 +8,7 @@ import type { DB } from "../src/db/client";
 import { completeCatalog } from "../src/db/catalog";
 import { seedServices, seedProducts } from "../src/db/seed-data";
 import { matchesSearch } from "../src/lib/catalog-search";
+import { officialServices } from "../src/data/official-services";
 
 async function main() {
   const client = new PGlite();
@@ -15,17 +16,25 @@ async function main() {
   try {
     await migrate(db, { migrationsFolder: "./drizzle" });
     const first = await completeCatalog(db as unknown as DB);
-    assert.equal(first.services, seedServices.length);
+    assert.equal(first.services, seedServices.filter((s) => !officialServices.some((o) => o[1] === s.slug)).length);
     assert.equal(first.drafts, seedProducts.length);
     const services = await db.select().from(schema.services);
     const categories = await db.select().from(schema.serviceCategories);
     assert.ok(categories.every((c) => services.some((s) => s.categoryId === c.id)));
-    assert.equal(services.filter((s) => s.price !== null).length, 3);
+    assert.equal(services.filter((s) => s.price !== null).length, officialServices.length);
+    for (const [, slug, name, price, summary] of officialServices) {
+      const service = services.find((s) => s.slug === slug)!;
+      assert.equal(service.name, name);
+      assert.equal(service.price, price);
+      assert.equal(service.summary, summary);
+      assert.equal(service.duration, null);
+    }
     const products = await db.select().from(schema.products);
     assert.ok(products.every((p) => !p.active && p.stock === 0 && p.price === 0));
     await db.update(schema.services).set({ price: 12345, summary: "Texto del taller", active: false }).where(eq(schema.services.slug, "mantencion-basica"));
     await db.update(schema.products).set({ price: 8900, stock: 7, active: true }).where(eq(schema.products.slug, products[0].slug));
     const again = await completeCatalog(db as unknown as DB);
+    await migrate(db, { migrationsFolder: "./drizzle" });
     assert.deepEqual(again, { services: 0, drafts: 0 });
     const [service] = await db.select().from(schema.services).where(eq(schema.services.slug, "mantencion-basica"));
     assert.equal(service.price, 12345);

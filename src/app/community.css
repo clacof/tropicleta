@@ -1,0 +1,12 @@
+.tp-mobile { background: linear-gradient(130deg, #17140f, #0d0e0f 70%); border-block: 1px solid #f59b2430; }
+.tp-mobile-grid { display: grid; grid-template-columns: minmax(220px, 360px) minmax(0, 1fr); gap: clamp(28px, 6vw, 90px); align-items: center; }
+.tp-mobile-poster { display: block; max-width: 360px; margin: auto; border: 1px solid #f59b2455; border-radius: 20px; overflow: hidden; }
+.tp-mobile-poster img { display: block; width: 100%; height: auto; }
+.tp-pickup-table { overflow-x: auto; margin: 26px 0; border: 1px solid #ffffff25; border-radius: 16px; }
+.tp-pickup-table table { width: 100%; border-collapse: collapse; text-align: left; }
+.tp-pickup-table caption { padding: 16px; text-align: left; color: #bdbdbd; font-size: .85rem; }
+.tp-pickup-table th, .tp-pickup-table td { padding: 18px; border-top: 1px solid #ffffff20; }
+.tp-pickup-table thead { background: #ffffff06; }
+.tp-pickup-table td { font-weight: 700; color: #ffac38; white-space: nowrap; }
+.tp-catalog-poster-link { display: inline-block; color: #ffac38; margin: 0 0 18px; text-underline-offset: 4px; }
+@media (max-width: 760px) { .tp-mobile-grid { grid-template-columns: 1fr; } .tp-mobile-grid > div { grid-row: 1; } .tp-mobile-poster { max-width: 280px; } .tp-pickup-table th, .tp-pickup-table td { padding: 12px; font-size: .85rem; } }
