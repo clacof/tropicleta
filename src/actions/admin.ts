@@ -8,7 +8,7 @@ import { z } from "zod";
 import { db, schema } from "@/db";
 import { localDate, methods } from "@/lib/accounting-validation";
 import { audit } from "@/lib/audit";
-import { checkPassword, clientIp, createSession, destroySession, requireAdmin } from "@/lib/auth";
+import { adminConfigurationError, checkPassword, clientIp, createSession, destroySession, requireAdmin } from "@/lib/auth";
 import { isForeignKeyViolation, isUniqueViolation } from "@/lib/db-errors";
 import { emailLayout, escapeHtml, sendEmail } from "@/lib/email";
 import { formatCLP, slugify } from "@/lib/format";
@@ -38,6 +38,10 @@ async function notify(to: string | null | undefined, subject: string, text: stri
 
 export async function login(_prev: FormState, fd: FormData): Promise<FormState> {
   const password = String(fd.get("password") ?? "");
+  if (!password || password.length > 256) return { message: "Ingresa una contraseña válida." };
+  const configurationError = adminConfigurationError();
+  if (configurationError) return { message: configurationError };
+  try {
   // Freno a fuerza bruta por IP, guardado en la BD para que valga entre instancias
   const ip = await clientIp();
   if (await loginBlocked(ip)) return { message: "Demasiados intentos. Espera 15 minutos." };
@@ -49,6 +53,11 @@ export async function login(_prev: FormState, fd: FormData): Promise<FormState> 
   await clearLoginFailures(ip);
   await createSession();
   await audit("login", "sesion", null, "Ingreso al panel");
+  } catch (error) {
+    // No continuar sin verificar el límite de intentos ni revelar consultas o credenciales.
+    console.error("[admin-login]", error instanceof Error ? error.name : "UnknownError");
+    return { message: "No pudimos verificar el acceso. Reintenta en unos minutos. Si persiste, revisa la conexión y las migraciones de la base de datos en Vercel." };
+  }
   redirect("/admin/");
 }
 

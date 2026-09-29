@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { adminConfigurationError } from '../src/lib/auth-config';
+process.env.ADMIN_PASSWORD = 'tropicleta';
+process.env.SESSION_SECRET = 'short';
+assert.match(adminConfigurationError()!, /SESSION_SECRET/);
+process.env.SESSION_SECRET = 'test-only-long-session-secret-12345';
+assert.equal(adminConfigurationError(), null);
+process.env.ADMIN_PASSWORD = '';
+assert.match(adminConfigurationError()!, /ADMIN_PASSWORD/);
+console.log('PASS: configuración válida e incompleta identificadas');
