@@ -3,6 +3,7 @@ import { PageHero } from "@/components/PageHero";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { MobileWorkshopGallery } from "@/components/MobileWorkshopGallery";
+import { AnimatedEmblem } from "@/components/AnimatedEmblem";
 
 export const metadata: Metadata = {
   title: "Taller móvil para eventos",
@@ -18,7 +19,8 @@ const features = [
 
 export default function EventosPage() {
   return (
-    <>
+    <div className="tp-events-page">
+      <div className="tp-events-intro">
       <PageHero
         kicker="Taller móvil"
         title="Llevamos el taller"
@@ -37,22 +39,20 @@ export default function EventosPage() {
           Formulario de cotización
         </a>
       </PageHero>
+      <div className="tp-events-emblem"><AnimatedEmblem /></div>
+      </div>
 
       <section className="tp-section">
         <div className="tp-shell">
-          <span className="tp-kicker">Taller móvil Tropicleta</span>
-          <h2 className="tp-display tp-section-title">Nos encontramos en la ruta</h2>
-          <p className="tp-section-intro">Consulta disponibilidad. El alcance de la asistencia, horarios, traslado y repuestos se acuerdan al cotizar.</p>
-          <a className="tp-catalog-poster-link" href="/catalogo/7.jpg" target="_blank" rel="noopener">Ver la presentación del taller móvil ↗</a>
-          <div className="tp-feature-grid" style={{ marginTop: 26 }}>
+          <div className="tp-feature-grid">
             {features.map((f) => (
               <div key={f.n} className="tp-feature">
-                <div className="tp-feature-num">{f.n}</div>
                 <h3 className="tp-display">{f.t}</h3>
                 <p>{f.d}</p>
               </div>
             ))}
           </div>
+          <a className="tp-catalog-poster-link" href="/catalogo/7.jpg" target="_blank" rel="noopener">Ver la presentación del taller móvil ↗</a>
         </div>
       </section>
 
@@ -76,6 +76,6 @@ export default function EventosPage() {
           </aside>
         </div>
       </section>
-    </>
+    </div>
   );
 }

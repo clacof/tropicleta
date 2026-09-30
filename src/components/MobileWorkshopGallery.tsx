@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const videos = [
   { id: "Dcran3kSBDX", title: "Mecánica exprés en Little MTB", description: "Ajustes en terreno y apoyo a los ciclistas junto a Academia ROTS y Club Deportivo Camélidos." },
@@ -21,13 +21,26 @@ function processEmbeds() {
 }
 
 export function MobileWorkshopGallery() {
+  const track = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+  const [atEnd, setAtEnd] = useState(false);
+  function go(direction: number) {
+    const element = track.current;
+    if (!element) return;
+    const next = Math.max(0, Math.min(videos.length - 1, index + direction));
+    const card = element.children[next] as HTMLElement;
+    element.scrollTo({ left: card.offsetLeft - (element.children[0] as HTMLElement).offsetLeft, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+  }
   useEffect(processEmbeds, []);
   return <section className="tp-section tp-workshop" aria-labelledby="mobile-workshop-videos">
     <div className="tp-shell">
-      <span className="tp-kicker">Taller móvil en acción</span>
-      <h2 id="mobile-workshop-videos" className="tp-display tp-section-title">Historias fuera del taller</h2>
-      <p className="tp-section-intro">Acompáñanos en eventos, rutas y jornadas de mecánica comunitaria. Así se vive Tropicleta en terreno.</p>
-      <div className="tp-mobile-video-grid">
+      <div className="tp-video-heading"><div><h2 id="mobile-workshop-videos">El taller en acción</h2><p>Eventos, rutas y mecánica comunitaria en Atacama.</p></div>
+        <div className="tp-single-controls"><button type="button" onClick={() => go(-1)} disabled={index === 0} aria-label="Video anterior">←</button><span aria-live="polite">{index + 1} / {videos.length}</span><button type="button" onClick={() => go(1)} disabled={atEnd} aria-label="Video siguiente">→</button></div>
+      </div>
+      <p className="tp-swipe-hint">Desliza para ver más videos →</p>
+      <div className="tp-mobile-video-grid" ref={track} tabIndex={0} aria-label="Videos del taller móvil" aria-roledescription="carrusel"
+        onKeyDown={event => { if (event.key === "ArrowLeft" || event.key === "ArrowRight") { event.preventDefault(); go(event.key === "ArrowRight" ? 1 : -1); } }}
+        onScroll={event => { const element = event.currentTarget; const first = element.children[0] as HTMLElement; const width = first.getBoundingClientRect().width + 24; setIndex(Math.min(videos.length - 1, Math.round(element.scrollLeft / width))); setAtEnd(element.scrollLeft >= element.scrollWidth - element.clientWidth - 2); }}>
         {videos.map(video => {
           const url = `https://www.instagram.com/${"type" in video ? video.type : "reel"}/${video.id}/`;
           return <article className="tp-mobile-video-card" key={video.id}>

@@ -73,3 +73,57 @@
 .tp-mobile-video-link { display:inline-block; margin-top:18px; color:#ffad32; font-weight:700; }
 @media(max-width:1099px) { .tp-mobile-video-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:699px) { .tp-mobile-video-grid { grid-template-columns:1fr; max-width:480px; margin-inline:auto; } }
+
+/* Ritmo común y líneas de lectura más cómodas. */
+.tp-section { padding-block:clamp(40px,5vw,72px); }
+.tp-section-title { font-size:clamp(32px,4vw,48px); line-height:1.08; text-wrap:balance; }
+.tp-section-intro, .tp-hero-copy { max-width:62ch; text-wrap:pretty; line-height:1.7; }
+.tp-home-photo-hero h1 { font-size:clamp(42px,5.2vw,70px); line-height:1.03; max-width:12ch; text-wrap:balance; }
+.tp-actions { gap:12px; }
+.tp-header .tp-nav { gap:20px; }
+@media(min-width:980px) and (max-width:1439px) { .tp-header-cta { display:none; } }
+@media(min-width:980px) and (max-width:1100px) { .tp-header .tp-brand-wordmark { width:160px; } .tp-header .tp-brand-mascot { width:60px; } .tp-header .tp-nav { gap:14px; } }
+.tp-footer { background:radial-gradient(ellipse at top left,#8d4c193f,transparent 65%),linear-gradient(120deg,#1e2426,#10191c); border-top:3px solid #f59600; padding-top:42px; }
+.tp-footer-grid { gap:28px; align-items:start; }
+.tp-footer-grid > div { min-width:0; }
+@media(max-width:979px) { .tp-footer-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:699px) { .tp-footer-brand, .tp-footer-grid > div:last-child { grid-column:1 / -1; } .tp-footer ul { font-size:13px; line-height:1.6; } }
+.tp-footer .tp-brand-lockup { gap:10px; }
+.tp-footer .tp-brand-mascot { width:58px; height:auto; }
+.tp-footer .tp-brand-wordmark { width:190px; height:auto; }
+.tp-footer h2 { color:#ffad32; }
+.tp-footer-brand p { max-width:36ch; }
+.tp-footer .tp-socials a { background:#f5960020; border-color:#f5960055; }
+.tp-footer-bottom { margin-top:30px; color:#afb6b8; border-color:#f5960040; }
+.tp-events-intro { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:40px; align-items:center; max-width:1200px; margin:auto; padding-inline:24px; }
+.tp-events-intro .tp-shell { width:100%; }
+.tp-events-intro .tp-page-hero { padding-block:42px; background:none; }
+.tp-events-intro h1 { font-size:clamp(38px,4.5vw,62px); line-height:1.05; max-width:16ch; text-wrap:balance; }
+.tp-events-emblem .tp-emblem { width:250px; }
+.tp-events-page > .tp-section:first-of-type { padding-top:12px; padding-bottom:28px; }
+.tp-events-page .tp-feature-grid { gap:18px; }
+.tp-events-page .tp-feature { padding:20px; }
+.tp-events-page .tp-feature h3 { font-size:20px; line-height:1.2; }
+.tp-events-page .tp-feature p { font-size:14px; line-height:1.65; }
+.tp-events-page .tp-catalog-poster-link { margin-top:18px; margin-bottom:0; font-size:14px; }
+.tp-video-heading { display:flex; justify-content:space-between; gap:24px; align-items:center; margin-bottom:14px; }
+.tp-video-heading h2 { margin:0 0 8px; font-size:28px; line-height:1.2; }
+.tp-video-heading p { margin:0; color:#bfc4c6; }
+.tp-video-heading .tp-single-controls { margin:0; }
+.tp-single-controls button:disabled { opacity:.35; cursor:default; }
+.tp-swipe-hint { color:#ffad32; font-size:13px; margin-bottom:18px; }
+.tp-mobile-video-grid { display:flex; gap:24px; overflow-x:auto; scroll-snap-type:x mandatory; overscroll-behavior-x:contain; max-width:none; margin:0; padding-bottom:16px; scrollbar-color:#d98b29 #272d30; }
+.tp-mobile-video-card { flex:0 0 calc((100% - 48px)/3); scroll-snap-align:start; }
+@media(max-width:1099px) { .tp-mobile-video-card { flex-basis:calc((100% - 24px)/2); } }
+@media(max-width:699px) {
+  .tp-events-intro { grid-template-columns:1fr; gap:0; }
+  .tp-events-intro .tp-page-hero { padding-bottom:20px; }
+  .tp-events-emblem { justify-self:center; margin-bottom:24px; }
+  .tp-events-emblem .tp-emblem { width:150px; }
+  .tp-events-page .tp-feature-grid { grid-template-columns:1fr 1fr; gap:12px; }
+  .tp-events-page .tp-feature { padding:16px; }
+  .tp-events-page .tp-feature h3 { font-size:17px; }
+  .tp-mobile-video-card { flex-basis:100%; }
+  .tp-video-heading { align-items:flex-start; flex-direction:column; gap:16px; }
+  .tp-home-photo-hero h1 { font-size:clamp(40px,9vw,56px); }
+}

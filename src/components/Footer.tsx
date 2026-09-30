@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { BrandLogo } from "./BrandLogo";
 import { footerLinks, site } from "@/data/site";
 import { WA_CONSULTAR } from "@/lib/whatsapp";
 import { SocialIcon } from "./SocialIcon";
@@ -13,7 +13,7 @@ export function Footer() {
         <div className="tp-footer-grid">
           <div className="tp-footer-brand">
             <Link href="/" className="tp-footer-logo" aria-label="Tropicleta, ir al inicio">
-              <Image src="/brand/logo-vertical.webp" alt="Tropicleta · Taller de bicicletas" width={420} height={662} sizes="142px" />
+              <BrandLogo />
             </Link>
             <p>
               Taller de bicicletas y scooters eléctricos en Tierra Amarilla. Atención con coordinación previa y retiro y
