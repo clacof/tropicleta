@@ -42,10 +42,10 @@ export default async function HomePage() {
         <div className="tp-shell">
           <div className="tp-hero-grid">
             <div>
-              <div className="tp-location">
+              <div className="tp-hero-intro-brand"><AnimatedEmblem /><div className="tp-location">
                 <span className="tp-location-dot" />
                 {site.location}
-              </div>
+              </div></div>
 
               <h1 id="tp-main-title" className="tp-display">
                 Taller de bicicletas <span>hecho para rodar.</span>
@@ -75,8 +75,15 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="tp-hero-showcase"><div className="tp-hero-brand"><AnimatedEmblem /></div><ServiceCarousel /></div>
+            <div className="tp-hero-showcase"><ServiceCarousel /></div>
           </div>
+        </div>
+      </section>
+
+      <section className="tp-section tp-mobile-summary">
+        <div className="tp-shell tp-mobile-summary-grid">
+          <div><span className="tp-kicker">Taller móvil</span><h2 className="tp-display tp-section-title">Nos vemos en tu próxima ruta.</h2><p className="tp-section-intro">Llevamos la mecánica de Tropicleta a carreras, cicletadas y jornadas comunitarias en Atacama. Coordinamos el apoyo según las necesidades de tu evento.</p><Link className="tp-btn tp-btn-secondary" href="/eventos/">Conocer el taller móvil →</Link></div>
+          <Link href="/eventos/" className="tp-mobile-summary-photo"><Image src="/taller/equipo-tropicleta.jpeg" alt="El equipo y el furgón Tropicleta en terreno" width={1080} height={720} sizes="(max-width: 700px) 90vw, 420px" /><span>Eventos · Rutas · Comunidad ↗</span></Link>
         </div>
       </section>
 

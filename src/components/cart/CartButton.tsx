@@ -7,8 +7,9 @@ export function CartButton() {
   return (
     <button type="button" className="tp-cart-btn" onClick={open} aria-label={`Abrir carrito (${count} productos)`}>
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-        <path d="M6 7h12l-1 13H7L6 7Z" strokeLinejoin="round" />
-        <path d="M9 7a3 3 0 0 1 6 0" strokeLinecap="round" />
+        <path d="M2 3h3l3 12h11l3-9H6" strokeLinejoin="round" strokeLinecap="round" />
+        <path d="M8 15l-1 3h13" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="9" cy="21" r="1" /><circle cx="19" cy="21" r="1" />
       </svg>
       {ready && count > 0 && <span className="tp-cart-count">{count}</span>}
     </button>

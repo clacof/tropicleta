@@ -143,3 +143,25 @@
 .tp-video-playback button { border:1px solid #ffffff40; border-radius:24px; padding:9px 16px; color:#ddd; background:#0d1114; cursor:pointer; font-size:13px; }
 @media(max-width:699px) { .tp-video-slide { width:86%; } .tp-video-slide.is-previous { transform:translateX(-98%) scale(.92); } .tp-video-slide.is-next { transform:translateX(98%) scale(.92); } }
 @media(prefers-reduced-motion:reduce) { .tp-video-slide { transition:none; } }
+
+.tp-footer-wordmark { display:grid; width:155px; gap:3px; }
+.tp-footer-wordmark-crop { display:block; aspect-ratio:700/391; overflow:hidden; }
+.tp-footer .tp-footer-wordmark-crop img { display:block; width:100%; height:auto; }
+.tp-footer-tagline { color:#fff; font-family:var(--font-luckiest),sans-serif; font-size:13px; line-height:1.1; text-transform:uppercase; text-align:center; text-shadow:none; -webkit-text-stroke:0; letter-spacing:0; }
+.tp-hero-intro-brand { display:flex; align-items:center; gap:20px; margin-bottom:20px; }
+.tp-hero-intro-brand .tp-emblem { width:110px; flex-shrink:0; }
+.tp-hero-intro-brand .tp-location { margin:0; max-width:26ch; line-height:1.5; }
+.tp-home-photo-hero .tp-hero-grid { gap:40px; align-items:center; }
+.tp-home-photo-hero h1 { font-size:clamp(42px,4.8vw,64px); max-width:15ch; margin-bottom:20px; }
+.tp-home-photo-hero .tp-hero-copy { max-width:52ch; margin-bottom:24px; }
+.tp-home-photo-hero .tp-single-carousel { width:min(100%,340px); }
+.tp-home-photo-hero .tp-poster-crop { aspect-ratio:720/1053; }
+.tp-home-photo-hero .tp-poster-crop img { width:100%; height:100%; object-fit:contain; }
+.tp-mobile-summary { background:linear-gradient(120deg,#1d2426,#11181c); border-block:1px solid #ffad3225; }
+.tp-mobile-summary-grid { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr); gap:56px; align-items:center; }
+.tp-mobile-summary .tp-section-title { max-width:18ch; }
+.tp-mobile-summary .tp-section-intro { margin-bottom:24px; }
+.tp-mobile-summary-photo { position:relative; display:block; overflow:hidden; border-radius:18px; border:1px solid #ffffff25; }
+.tp-mobile-summary-photo img { display:block; width:100%; height:auto; }
+.tp-mobile-summary-photo span { position:absolute; inset:auto 0 0; padding:30px 18px 16px; color:#fff; background:linear-gradient(transparent,#000c); font-size:13px; font-weight:700; }
+@media(max-width:700px) { .tp-hero-intro-brand .tp-emblem { width:88px; } .tp-hero-intro-brand { gap:16px; } .tp-home-photo-hero h1 { font-size:clamp(38px,9vw,52px); } .tp-mobile-summary-grid { grid-template-columns:1fr; gap:28px; } }
