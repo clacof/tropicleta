@@ -165,7 +165,7 @@
 .tp-mobile-summary-photo { position:relative; display:block; overflow:hidden; border-radius:18px; border:1px solid #ffffff25; }
 .tp-mobile-summary-photo img { display:block; width:100%; height:auto; }
 .tp-mobile-summary-photo span { position:absolute; inset:auto 0 0; padding:30px 18px 16px; color:#fff; background:linear-gradient(transparent,#000c); font-size:13px; font-weight:700; }
-@media(max-width:700px) { .tp-hero-intro-brand .tp-emblem { width:88px; } .tp-hero-intro-brand { gap:16px; } .tp-home-photo-hero h1 { font-size:clamp(38px,9vw,52px); } .tp-mobile-summary-grid { grid-template-columns:1fr; gap:28px; } }
+@media(max-width:700px) { .tp-hero-intro-brand .tp-emblem { width:88px; } .tp-hero-intro-brand { gap:16px; } .tp-home-photo-hero h1 { font-size:clamp(38px,9vw,52px); } .tp-mobile-summary-grid { grid-template-columns:1fr; gap:28px; } .tp-mobile-summary-photo { order:0; } }
 
 .tp-carousel-dots { display:flex; justify-content:center; align-items:center; gap:2px; margin-bottom:4px; }
 .tp-carousel-dots button { display:grid; place-items:center; width:28px; height:28px; padding:0; border:0; background:transparent; cursor:pointer; border-radius:50%; }
