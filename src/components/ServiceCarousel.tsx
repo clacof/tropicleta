@@ -34,7 +34,6 @@ export function ServiceCarousel() {
     onFocusCapture={() => setInteracting(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setInteracting(false); }}
     onKeyDown={event => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); go(event.key === "ArrowRight" ? 1 : -1); } }}>
     <div className="tp-carousel-dots" aria-label="Elegir servicio">{slides.map((slide, position) => <button key={slide.number} type="button" onClick={() => setIndex(position)} aria-label={`Ver ${slide.title}`} aria-current={index === position ? "true" : undefined} aria-controls="service-carousel"><span /></button>)}</div>
-    <p className="tp-carousel-label" aria-live={interacting || reducedMotion ? "polite" : "off"}>{slides[index].title}</p>
     <div id="service-carousel" style={{ touchAction: "pan-y" }}
       onTouchStart={event => { const point = event.touches[0]; touch.current = { x: point.clientX, y: point.clientY }; swiped.current = false; setInteracting(true); }}
       onTouchEnd={event => { const start = touch.current; const end = event.changedTouches[0]; if (start && Math.abs(end.clientX - start.x) > 45 && Math.abs(end.clientX - start.x) > Math.abs(end.clientY - start.y)) { go(end.clientX < start.x ? 1 : -1); swiped.current = true; } touch.current = null; setInteracting(false); }}
