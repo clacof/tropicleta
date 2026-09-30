@@ -13,7 +13,7 @@ export function Footer() {
         <div className="tp-footer-grid">
           <div className="tp-footer-brand">
             <Link href="/" className="tp-footer-logo" aria-label="Tropicleta, ir al inicio">
-              <BrandLogo />
+              <BrandLogo stacked />
             </Link>
             <p>
               Taller de bicicletas y scooters eléctricos en Tierra Amarilla. Atención con coordinación previa y retiro y

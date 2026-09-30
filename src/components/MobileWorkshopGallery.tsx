@@ -1,6 +1,6 @@
 "use client";
 
-import Script from "next/script";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 const videos = [
@@ -15,48 +15,54 @@ const videos = [
   { id: "DOEDDGrjdsZ", type: "p", title: "Taller móvil en Cumbres de Atacama", description: "Mecánica en terreno junto a Perros Deache, acompañando a los corredores en Cumbres de Atacama." },
 ];
 
-function processEmbeds() {
-  const instagram = (window as Window & { instgrm?: { Embeds: { process: () => void } } }).instgrm;
-  instagram?.Embeds.process();
-}
-
 export function MobileWorkshopGallery() {
-  const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
-  const [atEnd, setAtEnd] = useState(false);
-  function go(direction: number) {
-    const element = track.current;
-    if (!element) return;
-    const next = Math.max(0, Math.min(videos.length - 1, index + direction));
-    const card = element.children[next] as HTMLElement;
-    element.scrollTo({ left: card.offsetLeft - (element.children[0] as HTMLElement).offsetLeft, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
-  }
-  useEffect(processEmbeds, []);
-  return <section className="tp-section tp-workshop" aria-labelledby="mobile-workshop-videos">
+  const [paused, setPaused] = useState(false);
+  const [interacting, setInteracting] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const touch = useRef<{x:number;y:number} | null>(null);
+  const go = (direction: number) => setIndex(current => (current + direction + videos.length) % videos.length);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(media.matches);
+    update(); media.addEventListener("change", update);
+    const stop = () => setPaused(true);
+    window.addEventListener("blur", stop);
+    return () => { media.removeEventListener("change", update); window.removeEventListener("blur", stop); };
+  }, []);
+  useEffect(() => {
+    if (paused || interacting || reducedMotion) return;
+    const timer = window.setInterval(() => { if (!document.hidden) setIndex(current => (current + 1) % videos.length); }, 8500);
+    return () => window.clearInterval(timer);
+  }, [paused, interacting, reducedMotion, index]);
+  return <section className="tp-section tp-workshop tp-instagram-gallery" aria-labelledby="mobile-workshop-videos">
     <div className="tp-shell">
       <div className="tp-video-heading"><div><h2 id="mobile-workshop-videos">El taller en acción</h2><p>Eventos, rutas y mecánica comunitaria en Atacama.</p></div>
-        <div className="tp-single-controls"><button type="button" onClick={() => go(-1)} disabled={index === 0} aria-label="Video anterior">←</button><span aria-live="polite">{index + 1} / {videos.length}</span><button type="button" onClick={() => go(1)} disabled={atEnd} aria-label="Video siguiente">→</button></div>
+        <div className="tp-single-controls"><button type="button" onClick={() => go(-1)} aria-label="Video anterior">←</button><span aria-live={paused || interacting ? "polite" : "off"}>{index + 1} / {videos.length}</span><button type="button" onClick={() => go(1)} aria-label="Video siguiente">→</button></div>
       </div>
       <p className="tp-swipe-hint">Desliza para ver más videos →</p>
-      <div className="tp-mobile-video-grid" ref={track} tabIndex={0} aria-label="Videos del taller móvil" aria-roledescription="carrusel"
+      <div className="tp-video-stage" tabIndex={0} aria-label="Videos del taller móvil" aria-roledescription="carrusel"
+        onMouseEnter={() => setInteracting(true)} onMouseLeave={() => setInteracting(false)}
+        onFocusCapture={() => setInteracting(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setInteracting(false); }}
+        onTouchStart={event => { const point = event.touches[0]; touch.current = { x:point.clientX,y:point.clientY }; setInteracting(true); }}
+        onTouchEnd={event => { const start = touch.current; const end = event.changedTouches[0]; if (start && Math.abs(end.clientX - start.x) > 45 && Math.abs(end.clientX - start.x) > Math.abs(end.clientY - start.y)) go(end.clientX < start.x ? 1 : -1); touch.current = null; setInteracting(false); }}
+        onTouchCancel={() => { touch.current = null; setInteracting(false); }}
         onKeyDown={event => { if (event.key === "ArrowLeft" || event.key === "ArrowRight") { event.preventDefault(); go(event.key === "ArrowRight" ? 1 : -1); } }}
-        onScroll={event => { const element = event.currentTarget; const first = element.children[0] as HTMLElement; const width = first.getBoundingClientRect().width + 24; setIndex(Math.min(videos.length - 1, Math.round(element.scrollLeft / width))); setAtEnd(element.scrollLeft >= element.scrollWidth - element.clientWidth - 2); }}>
-        {videos.map(video => {
+        >
+        {[-1,0,1].map(offset => {
+          const video = videos[(index + offset + videos.length) % videos.length];
           const url = `https://www.instagram.com/${"type" in video ? video.type : "reel"}/${video.id}/`;
-          return <article className="tp-mobile-video-card" key={video.id}>
-            <div className="tp-mobile-video-embed">
-              <blockquote className="instagram-media" data-instgrm-permalink={url} data-instgrm-version="14">
-                <a href={url} target="_blank" rel="noopener noreferrer"><span className="tp-video-play" aria-hidden="true">▶</span><strong>{video.title}</strong><span>Ver video en Instagram ↗</span></a>
-              </blockquote>
-            </div>
+          return <article className={`tp-video-slide tp-instagram-post ${offset === 0 ? "is-active" : offset < 0 ? "is-previous" : "is-next"}`} key={`${offset}-${video.id}`} aria-hidden={offset !== 0} inert={offset !== 0}>
+            <div className="tp-instagram-post-header"><Image src="/brand/mascota-oficial.webp" alt="" width={32} height={32} /><span><strong>tropicleta</strong><small>Tierra Amarilla · Atacama</small></span><span className="tp-instagram-open" aria-hidden="true">↗</span></div>
+            <div className="tp-video-player"><iframe src={`${url}embed/`} title={video.title} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" loading={offset === 0 ? "eager" : "lazy"} tabIndex={offset === 0 ? 0 : -1} /></div>
             <div className="tp-workshop-caption">
-              <h3>{video.title}</h3><p>{video.description}</p>
-              <a className="tp-mobile-video-link" href={url} target="_blank" rel="noopener noreferrer" aria-label={`Ver ${video.title} en Instagram`}>Ver en Instagram ↗</a>
+              <span className="tp-instagram-post-link">{offset === 0 ? "En terreno con Tropicleta" : "Más historias en terreno"}</span><h3>{video.title}</h3><p>{video.description}</p>
+              {offset === 0 && <a className="tp-mobile-video-link" href={url} target="_blank" rel="noopener noreferrer" aria-label={`Ver ${video.title} en Instagram`}>Ver en Instagram ↗</a>}
             </div>
           </article>;
         })}
       </div>
+      <div className="tp-video-playback"><button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused}>{paused ? "Reanudar carrusel" : "Pausar carrusel"}</button></div>
     </div>
-    <Script src="https://www.instagram.com/embed.js" strategy="lazyOnload" onReady={processEmbeds} />
   </section>;
 }

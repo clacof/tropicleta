@@ -3,7 +3,6 @@ import { PageHero } from "@/components/PageHero";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { MobileWorkshopGallery } from "@/components/MobileWorkshopGallery";
-import { AnimatedEmblem } from "@/components/AnimatedEmblem";
 
 export const metadata: Metadata = {
   title: "Taller móvil para eventos",
@@ -39,7 +38,6 @@ export default function EventosPage() {
           Formulario de cotización
         </a>
       </PageHero>
-      <div className="tp-events-emblem"><AnimatedEmblem /></div>
       </div>
 
       <section className="tp-section">
