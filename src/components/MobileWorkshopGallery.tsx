@@ -11,8 +11,6 @@ const videos = [
   { id: "Db0qbwOx5x9", title: "Reconocimiento de la carrera", description: "En ruta durante el reconocimiento de Atacama Desert Race." },
   { id: "DbgaWlXxZdZ", title: "Mecánica en Complejo Candelaria", description: "Ajustes gratuitos para acompañar una jornada deportiva de la comunidad." },
   { id: "DZNK5z0RR43", title: "Mecánica comunitaria en El Escorial", description: "Una jornada de apoyo a las bicicletas de Tierra Amarilla junto a la Oficina de Juventudes, Cultura y Patrimonio." },
-  { id: "DS0YoW-Ehje", title: "Mecánica exprés junto a PedaleAtacama", description: "Apoyo mecánico en el punto de encuentro de una ruta recreativa organizada por PedaleAtacama." },
-  { id: "DOEDDGrjdsZ", type: "p", title: "Taller móvil en Cumbres de Atacama", description: "Mecánica en terreno junto a Perros Deache, acompañando a los corredores en Cumbres de Atacama." },
 ];
 
 export function MobileWorkshopGallery() {
@@ -36,8 +34,8 @@ export function MobileWorkshopGallery() {
     return () => window.clearInterval(timer);
   }, [paused, interacting, reducedMotion, index]);
   const video = videos[index];
-  const url = `https://www.instagram.com/${"type" in video ? video.type : "reel"}/${video.id}/`;
-  const thumbnail = index < 7 ? `/taller/eventos/${video.id}.jpg` : "/taller/taller-movil-presentacion.jpeg";
+  const url = `https://www.instagram.com/reel/${video.id}/`;
+  const thumbnail = `/taller/eventos/${video.id}.jpg`;
   const swiped = useRef(false);
   return <section className="tp-event-example" aria-label="Ejemplos del taller móvil" aria-roledescription="carrusel"
         onMouseEnter={() => setInteracting(true)} onMouseLeave={() => setInteracting(false)}

@@ -64,13 +64,13 @@ export default async function HomePage() {
                   rel="noopener"
                   aria-label="Coordinar servicio con Tropicleta por WhatsApp"
                 >
-                  Coordinar por WhatsApp
+                  WhatsApp
                 </a>
                 <Link className="tp-btn tp-btn-secondary" href="/servicios/">
-                  Servicios y cotización
+                  Cotizar servicios
                 </Link>
                 <Link className="tp-btn tp-btn-secondary" href="/tienda/">
-                  Ir a la tienda
+                  Tienda
                 </Link>
               </div>
             </div>

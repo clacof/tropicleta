@@ -42,7 +42,7 @@ export function ServiceCarousel() {
       onTouchCancel={() => { touch.current = null; setInteracting(false); }}
       onClickCapture={event => { if (swiped.current) { event.preventDefault(); event.stopPropagation(); swiped.current = false; } }}>
       {slides.map((slide, position) => <article key={slide.number} hidden={position !== index} className="tp-single-card" aria-label={position + 1 + " de " + slides.length + ": " + slide.title} aria-roledescription="lámina">
-        <Link href={slide.href} className="tp-poster-crop" aria-label={"Ver " + slide.title}><Image src={"/catalogo/compacto/" + slide.number + ".jpg"} alt={"Catálogo Tropicleta: " + slide.title} fill sizes="(max-width: 600px) 90vw, 340px" loading={position === index ? "eager" : "lazy"} /></Link>
+        <Link href={slide.href} className="tp-poster-crop" aria-label={"Ver " + slide.title}><Image src={slide.number === 1 ? "/catalogo/compacto/servicios-generales.jpg" : "/catalogo/compacto/" + slide.number + ".jpg"} alt={"Catálogo Tropicleta: " + slide.title} fill sizes="(max-width: 600px) 90vw, 270px" loading={position === index ? "eager" : "lazy"} /></Link>
         <div className="tp-single-caption"><Link className="tp-btn tp-btn-primary" href={slide.href}>{slide.cta ?? "Ir a servicios y cotización"} →</Link></div>
       </article>)}
     </div>
