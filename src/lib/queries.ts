@@ -28,9 +28,9 @@ export const getServiceCatalog = unstable_cache(
         .where(eq(services.active, true))
         .orderBy(asc(services.sort), asc(services.name)),
     ]);
-    return cats.map((c) => ({ ...c, services: rows.filter((s) => s.categoryId === c.id) }));
+    return cats.map((c) => ({ ...c, services: rows.filter((s) => s.categoryId === c.id) })).filter(c => c.services.length > 0);
   },
-  ["service-catalog-v3"],
+  ["service-catalog-v4"],
   catalogCache,
 );
 
@@ -44,7 +44,7 @@ export const getService = unstable_cache(
       .limit(1);
     return rows[0] ?? null;
   },
-  ["service-v3"],
+  ["service-v4"],
   catalogCache,
 );
 

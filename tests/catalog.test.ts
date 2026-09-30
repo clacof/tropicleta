@@ -8,7 +8,7 @@ import type { DB } from "../src/db/client";
 import { completeCatalog } from "../src/db/catalog";
 import { seedServices, seedProducts } from "../src/db/seed-data";
 import { matchesSearch } from "../src/lib/catalog-search";
-import { officialServices } from "../src/data/official-services";
+import { officialServices, excludedServiceSlugs } from "../src/data/official-services";
 
 async function main() {
   const client = new PGlite();
@@ -16,18 +16,20 @@ async function main() {
   try {
     await migrate(db, { migrationsFolder: "./drizzle" });
     const first = await completeCatalog(db as unknown as DB);
-    assert.equal(first.services, seedServices.filter((s) => !officialServices.some((o) => o[1] === s.slug)).length);
+    assert.equal(first.services, 0);
     assert.equal(first.drafts, seedProducts.length);
     const services = await db.select().from(schema.services);
     const categories = await db.select().from(schema.serviceCategories);
-    assert.ok(categories.every((c) => services.some((s) => s.categoryId === c.id)));
-    assert.equal(services.filter((s) => s.price !== null).length, officialServices.length);
+    const active = services.filter(s => s.active);
+    assert.equal(active.length, officialServices.length);
+    assert.ok(excludedServiceSlugs.every(slug => !active.some(s => s.slug === slug)));
     for (const [, slug, name, price, summary] of officialServices) {
       const service = services.find((s) => s.slug === slug)!;
       assert.equal(service.name, name);
       assert.equal(service.price, price);
       assert.equal(service.summary, summary);
       assert.equal(service.duration, null);
+      if (slug !== "retiro-y-entrega") assert.equal(service.priceFrom, false);
     }
     const products = await db.select().from(schema.products);
     assert.ok(products.every((p) => !p.active && p.stock === 0 && p.price === 0));

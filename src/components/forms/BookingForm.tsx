@@ -64,6 +64,7 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
               {c.name}
             </span>
             <div className="tp-options tp-options-2">
+            {c.slug === "scooters" && <p className="tp-hint" style={{ gridColumn: "1 / -1" }}>Solo realizamos parchados, cambio de cámara, inyección de líquido sellante tubeless y ajuste de frenos. Para el líquido, selecciona el servicio de $7.000 en Ruedas y sistema tubeless.</p>}
               {c.services.filter(s => matchesSearch(query, s.name, s.summary, c.name)).map((s) => (
                 <label key={s.slug} className="tp-option">
                   <input type="checkbox" checked={selected.has(s.slug)} onChange={() => toggle(s.slug)} disabled={!selected.has(s.slug) && selected.size >= 10} />
@@ -78,7 +79,7 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
       </fieldset>
 
       <fieldset className="tp-fieldset">
-        <legend className="tp-label">2. Tu vehículo</legend>
+        <legend className="tp-label">2. Tu vehículo, bicicleta o scooter</legend>
         <div className="tp-options tp-options-2">
           {[
             ["bicicleta", "Bicicleta"],

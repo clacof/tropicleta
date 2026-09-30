@@ -3,6 +3,7 @@ import type { DB } from "./client";
 import * as schema from "./schema";
 import { seedProductCategories, seedProducts, seedServiceCategories, seedServices } from "./seed-data";
 import { fallbackFeatured } from "../data/services-fallback";
+import { excludedServiceSlugs } from "../data/official-services";
 
 /** Completa el catálogo sin reemplazar precios, stock ni cambios del administrador. */
 export async function completeCatalog(db: DB) {
@@ -12,7 +13,7 @@ export async function completeCatalog(db: DB) {
         description: sql`coalesce(${schema.serviceCategories.description}, excluded.description)`,
       } });
     const categories = await tx.select().from(schema.serviceCategories);
-    const services = seedServices.map((s, sort) => ({
+    const services = seedServices.filter(s => !excludedServiceSlugs.includes(s.slug)).map((s, sort) => ({
       slug: s.slug, name: s.name, sort,
       categoryId: categories.find((c) => c.slug === s.cat)!.id,
       // Los únicos importes confirmados son los tres servicios del sitio original.

@@ -9,7 +9,7 @@ const slides = [
   { number: 2, title: "Ruedas y tubeless", href: "/servicios/#ruedas" },
   { number: 3, title: "Suspensiones", href: "/servicios/#suspensiones" },
   { number: 5, title: "Ejes y rodamientos", href: "/servicios/#ejes" },
-  { number: 6, title: "Transmisión", href: "/servicios/#transmision" },
+  { number: 6, title: "Transmisión", href: "/servicios/#frenos" },
 ];
 export function ServiceCarousel() {
   const [index, setIndex] = useState(0);
