@@ -35,34 +35,25 @@ export function MobileWorkshopGallery() {
     const timer = window.setInterval(() => { if (!document.hidden) setIndex(current => (current + 1) % videos.length); }, 8500);
     return () => window.clearInterval(timer);
   }, [paused, interacting, reducedMotion, index]);
-  return <section className="tp-section tp-workshop tp-instagram-gallery" aria-labelledby="mobile-workshop-videos">
-    <div className="tp-shell">
-      <div className="tp-video-heading"><div><h2 id="mobile-workshop-videos">El taller en acción</h2><p>Eventos, rutas y mecánica comunitaria en Atacama.</p></div>
-        <div className="tp-single-controls"><button type="button" onClick={() => go(-1)} aria-label="Video anterior">←</button><span aria-live={paused || interacting ? "polite" : "off"}>{index + 1} / {videos.length}</span><button type="button" onClick={() => go(1)} aria-label="Video siguiente">→</button></div>
-      </div>
-      <p className="tp-swipe-hint">Desliza para ver más videos →</p>
-      <div className="tp-video-stage" tabIndex={0} aria-label="Videos del taller móvil" aria-roledescription="carrusel"
+  const video = videos[index];
+  const url = `https://www.instagram.com/${"type" in video ? video.type : "reel"}/${video.id}/`;
+  const thumbnail = index < 7 ? `/taller/eventos/${video.id}.jpg` : "/taller/taller-movil-presentacion.jpeg";
+  const swiped = useRef(false);
+  return <section className="tp-event-example" aria-label="Ejemplos del taller móvil" aria-roledescription="carrusel"
         onMouseEnter={() => setInteracting(true)} onMouseLeave={() => setInteracting(false)}
         onFocusCapture={() => setInteracting(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setInteracting(false); }}
-        onTouchStart={event => { const point = event.touches[0]; touch.current = { x:point.clientX,y:point.clientY }; setInteracting(true); }}
-        onTouchEnd={event => { const start = touch.current; const end = event.changedTouches[0]; if (start && Math.abs(end.clientX - start.x) > 45 && Math.abs(end.clientX - start.x) > Math.abs(end.clientY - start.y)) go(end.clientX < start.x ? 1 : -1); touch.current = null; setInteracting(false); }}
+        onTouchStart={event => { const point = event.touches[0]; touch.current = { x:point.clientX,y:point.clientY }; swiped.current = false; setInteracting(true); }}
+        onTouchEnd={event => { const start = touch.current; const end = event.changedTouches[0]; if (start && Math.abs(end.clientX - start.x) > 45 && Math.abs(end.clientX - start.x) > Math.abs(end.clientY - start.y)) { go(end.clientX < start.x ? 1 : -1); swiped.current = true; } touch.current = null; setInteracting(false); }}
         onTouchCancel={() => { touch.current = null; setInteracting(false); }}
+        onClickCapture={event => { if (swiped.current) { event.preventDefault(); event.stopPropagation(); swiped.current = false; } }}
         onKeyDown={event => { if (event.key === "ArrowLeft" || event.key === "ArrowRight") { event.preventDefault(); go(event.key === "ArrowRight" ? 1 : -1); } }}
         >
-        {[-1,0,1].map(offset => {
-          const video = videos[(index + offset + videos.length) % videos.length];
-          const url = `https://www.instagram.com/${"type" in video ? video.type : "reel"}/${video.id}/`;
-          return <article className={`tp-video-slide tp-instagram-post ${offset === 0 ? "is-active" : offset < 0 ? "is-previous" : "is-next"}`} key={`${offset}-${video.id}`} aria-hidden={offset !== 0} inert={offset !== 0}>
-            <div className="tp-instagram-post-header"><Image src="/brand/mascota-oficial.webp" alt="" width={32} height={32} /><span><strong>tropicleta</strong><small>Tierra Amarilla · Atacama</small></span><span className="tp-instagram-open" aria-hidden="true">↗</span></div>
-            <div className="tp-video-player"><iframe src={`${url}embed/`} title={video.title} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" loading={offset === 0 ? "eager" : "lazy"} tabIndex={offset === 0 ? 0 : -1} /></div>
-            <div className="tp-workshop-caption">
-              <span className="tp-instagram-post-link">{offset === 0 ? "En terreno con Tropicleta" : "Más historias en terreno"}</span><h3>{video.title}</h3><p>{video.description}</p>
-              {offset === 0 && <a className="tp-mobile-video-link" href={url} target="_blank" rel="noopener noreferrer" aria-label={`Ver ${video.title} en Instagram`}>Ver en Instagram ↗</a>}
-            </div>
-          </article>;
-        })}
-      </div>
-      <div className="tp-video-playback"><button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused}>{paused ? "Reanudar carrusel" : "Pausar carrusel"}</button></div>
-    </div>
+      <div className="tp-carousel-dots" aria-label="Elegir evento">{videos.map((item, position) => <button type="button" key={item.id} onClick={() => setIndex(position)} aria-label={`Ver ${item.title}`} aria-current={position === index ? "true" : undefined}><span /></button>)}</div>
+      <article className="tp-instagram-post tp-example-card">
+        <div className="tp-instagram-post-header"><Image src="/brand/mascota-oficial.webp" alt="" width={32} height={32} /><span><strong>tropicleta</strong><small>Taller móvil en acción</small></span><span className="tp-instagram-open" aria-hidden="true">↗</span></div>
+        <a className="tp-example-preview" href={url} target="_blank" rel="noopener noreferrer" aria-label={`Ver video: ${video.title}`}><Image src={thumbnail} alt={video.title} fill sizes="(max-width: 700px) 85vw, 340px" /><span className="tp-example-play" aria-hidden="true">▶</span></a>
+        <div className="tp-workshop-caption"><h3>{video.title}</h3><p>{video.description}</p><a className="tp-mobile-video-link" href={url} target="_blank" rel="noopener noreferrer">Ver video en Instagram ↗</a></div>
+      </article>
+      <div className="tp-single-footer"><span>Ejemplos en terreno</span>{!reducedMotion && <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused}>{paused ? "Reanudar" : "Pausar"}</button>}</div>
   </section>;
 }

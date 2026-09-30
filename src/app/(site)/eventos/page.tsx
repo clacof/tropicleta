@@ -38,6 +38,7 @@ export default function EventosPage() {
           Formulario de cotización
         </a>
       </PageHero>
+      <MobileWorkshopGallery />
       </div>
 
       <section className="tp-section">
@@ -53,8 +54,6 @@ export default function EventosPage() {
           <a className="tp-catalog-poster-link" href="/catalogo/7.jpg" target="_blank" rel="noopener">Ver la presentación del taller móvil ↗</a>
         </div>
       </section>
-
-      <MobileWorkshopGallery />
 
       <section className="tp-section tp-shop" id="cotizar">
         <div className="tp-shell tp-two-col">

@@ -83,7 +83,7 @@ export default async function HomePage() {
       <section className="tp-section tp-mobile-summary">
         <div className="tp-shell tp-mobile-summary-grid">
           <div><span className="tp-kicker">Taller móvil</span><h2 className="tp-display tp-section-title">Nos vemos en tu próxima ruta.</h2><p className="tp-section-intro">Llevamos la mecánica de Tropicleta a carreras, cicletadas y jornadas comunitarias en Atacama. Coordinamos el apoyo según las necesidades de tu evento.</p><Link className="tp-btn tp-btn-secondary" href="/eventos/">Conocer el taller móvil →</Link></div>
-          <Link href="/eventos/" className="tp-mobile-summary-photo"><Image src="/taller/equipo-tropicleta.jpeg" alt="El equipo y el furgón Tropicleta en terreno" width={1080} height={720} sizes="(max-width: 700px) 90vw, 420px" /><span>Eventos · Rutas · Comunidad ↗</span></Link>
+          <Link href="/eventos/" className="tp-mobile-summary-photo"><Image src="/taller/taller-movil-presentacion.jpeg" alt="Taller móvil Tropicleta: asistencia mecánica en terreno para eventos ciclistas" width={720} height={1056} sizes="(max-width: 700px) 80vw, 300px" /></Link>
         </div>
       </section>
 
