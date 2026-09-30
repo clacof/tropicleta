@@ -27,14 +27,8 @@ export function MobileWorkshop() {
 }
 
 export function PickupRates() {
-  return <section className="tp-section" aria-labelledby="pickup-title"><div className="tp-shell">
-    <span className="tp-kicker">Retiro y entrega · Coordinación por zona</span>
-    <h2 id="pickup-title" className="tp-display tp-section-title">Nos acercamos a tu bici.</h2>
-    <p className="tp-section-intro">Coordinamos el retiro de tu bicicleta y su regreso desde el taller. Confirma dirección, horario y disponibilidad antes de agendar.</p>
-    <div className="tp-pickup-table"><table><caption>Tarifas de transporte de bicicletas, en pesos chilenos</caption><thead><tr><th scope="col">Zona</th><th scope="col">Solo retiro o entrega</th><th scope="col">Retiro + entrega</th></tr></thead><tbody>
-      {[["Tierra Amarilla", "$3.000", "$5.000"], ["Paipote", "$8.000", "$15.000"], ["Copiapó", "$12.000", "$20.000"]].map(([zone, one, both]) => <tr key={zone}><th scope="row">{zone}</th><td>{one}</td><td>{both}</td></tr>)}
-    </tbody></table></div>
-    <div className="tp-actions"><a className="tp-btn tp-btn-primary" href={whatsappUrl("Hola Tropicleta, quiero coordinar retiro o entrega de mi bicicleta. Mi zona es: __. Necesito: solo retiro / solo entrega / ambos.")} target="_blank" rel="noopener">Coordinar retiro o entrega</a><a className="tp-btn tp-btn-secondary" href="/catalogo/4.jpg" target="_blank" rel="noopener">Ver lámina de tarifas ↗</a></div>
-    <p className="tp-muted">Consulta por otras zonas. Estas tarifas corresponden al transporte de bicicletas al taller.</p>
+  return <section id="retiro-entrega" className="tp-section tp-pickup-visual" aria-labelledby="pickup-title"><div className="tp-shell tp-pickup-grid">
+    <div><span className="tp-kicker">Tu bici también viaja con nosotros</span><h2 id="pickup-title" className="tp-display tp-section-title">Del taller<br />a tu puerta.</h2><p className="tp-section-intro">Nos acercamos a tu bici. Coordinamos el retiro y su regreso en Tierra Amarilla, Paipote y Copiapó para que tú solo pienses en volver a pedalear.</p><p className="tp-muted">Elige tu zona al cotizar y verás el transporte sumado al total. Para solo retiro, solo entrega u otras zonas, escríbenos.</p><div className="tp-actions"><Link className="tp-btn tp-btn-primary" href="/servicios/">Cotizar servicio + transporte →</Link></div></div>
+    <div className="tp-pickup-poster"><div className="tp-pickup-crop"><Image src="/catalogo/4.jpg" alt="Tarifas de retiro y entrega: Tierra Amarilla $3.000 un trayecto o $5.000 ambos; Paipote $8.000 o $15.000; Copiapó $12.000 o $20.000" width={720} height={1280} sizes="(max-width: 760px) 100vw, 500px" /></div><a className="tp-btn tp-btn-primary tp-pickup-link" href={whatsappUrl("Hola Tropicleta, quiero coordinar retiro o entrega de mi bicicleta. Mi zona es: __. Necesito: solo retiro / solo entrega / ambos.")} target="_blank" rel="noopener noreferrer">Coordinar retiro o entrega ↗</a></div>
   </div></section>;
 }

@@ -55,7 +55,7 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
         <p className="tp-hint">Puedes elegir hasta 10 servicios. Los precios están en pesos chilenos.</p>
         {chosen.map(s => <input key={s.slug} type="hidden" name="services" value={s.slug} />)}
         {catalog.map((c) => (
-          <div key={c.slug} hidden={!c.services.some(s => matchesSearch(query, s.name, s.summary, c.name))} style={{ display: "grid", gap: 8 }}>
+          <div key={c.slug} id={c.slug} hidden={!c.services.some(s => matchesSearch(query, s.name, s.summary, c.name))} style={{ display: "grid", gap: 8 }}>
             <span className="tp-hint" style={{ fontWeight: 800, textTransform: "uppercase", letterSpacing: 1 }}>
               {c.name}
             </span>

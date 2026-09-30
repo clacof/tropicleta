@@ -10,3 +10,48 @@
 .tp-pickup-table td { font-weight: 700; color: #ffac38; white-space: nowrap; }
 .tp-catalog-poster-link { display: inline-block; color: #ffac38; margin: 0 0 18px; text-underline-offset: 4px; }
 @media (max-width: 760px) { .tp-mobile-grid { grid-template-columns: 1fr; } .tp-mobile-grid > div { grid-row: 1; } .tp-mobile-poster { max-width: 280px; } .tp-pickup-table th, .tp-pickup-table td { padding: 12px; font-size: .85rem; } }
+
+/* Fotografías y catálogo del inicio */
+.tp-home-photo-hero { background:#111719; }
+.tp-home-photo-hero::after { display:none; }
+.tp-home-photo-hero .tp-hero-grid { gap:40px; }
+.tp-home-photo-hero h1 { font-size:clamp(48px,6.8vw,86px); }
+.tp-hero-photo { position:relative; min-height:540px; border-radius:24px 24px 90px 24px; overflow:hidden; box-shadow:0 24px 70px #0005; }
+.tp-hero-photo > img { object-fit:cover; object-position:50% 38%; }
+.tp-hero-photo::after { content:""; position:absolute; inset:0; background:linear-gradient(transparent 50%,#080d11e8); }
+.tp-photo-caption { position:absolute; z-index:1; bottom:30px; left:28px; right:28px; }
+.tp-photo-caption span { display:block; color:#ddd; margin-bottom:10px; font-size:12px; letter-spacing:2px; text-transform:uppercase; }
+.tp-photo-caption strong { font-size:clamp(22px,3vw,34px); line-height:1.15; }
+.tp-catalog-showcase { background:#e9e5dc; color:#171b1d; }
+.tp-catalog-showcase .tp-section-intro { color:#555b5d; margin-bottom:0; }
+.tp-catalog-showcase .tp-kicker { color:#a85208; }
+.tp-carousel-heading { display:flex; justify-content:space-between; gap:24px; align-items:center; margin-bottom:28px; }
+.tp-carousel-controls { display:flex; gap:10px; }
+.tp-carousel-controls button { width:52px; height:52px; border:1px solid #171b1d; border-radius:50%; background:transparent; color:#171b1d; font-size:24px; cursor:pointer; }
+.tp-carousel-controls button:hover { background:#171b1d; color:white; }
+.tp-carousel-controls button:disabled { opacity:.3; cursor:default; }
+.tp-carousel-track { position:relative; display:flex; overflow-x:auto; gap:22px; scroll-snap-type:x mandatory; padding-bottom:16px; scrollbar-width:thin; scrollbar-color:#a85208 #d2cdc3; }
+.tp-carousel-card { flex:0 0 min(380px,85%); min-width:0; scroll-snap-align:start; border-radius:20px; overflow:hidden; background:#111; color:white; box-shadow:0 8px 20px #10101012; }
+.tp-poster-crop { display:block; position:relative; aspect-ratio:720/1040; overflow:hidden; background:#111; }
+.tp-poster-crop img { display:block; width:100%; height:auto; }
+.tp-carousel-caption { padding:20px; display:grid; gap:16px; }
+.tp-carousel-caption h3 { font-size:18px; margin:0; }
+.tp-carousel-caption .tp-btn { font-size:13px; }
+.tp-carousel-footer { display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; margin-top:14px; font-size:14px; }
+.tp-carousel-footer p { margin:0; color:#555b5d; }
+.tp-carousel-footer a { font-weight:700; text-underline-offset:4px; }
+.tp-home .tp-service-card { overflow:hidden; padding-top:0; }
+.tp-feature-photo { position:relative; height:190px; margin:0 -28px 24px; }
+.tp-feature-photo img { object-fit:cover; }
+.tp-pickup-visual { background:#1a2225; scroll-margin-top:120px; }
+.tp-pickup-grid { display:grid; grid-template-columns:1fr minmax(300px,500px); gap:clamp(30px,7vw,100px); align-items:center; }
+.tp-pickup-poster { overflow:hidden; border-radius:24px; background:#101010; padding-bottom:24px; border:1px solid #ffffff20; box-shadow:0 20px 60px #0004; }
+.tp-pickup-crop { aspect-ratio:720/1080; overflow:hidden; }
+.tp-pickup-crop img { display:block; width:100%; height:auto; }
+.tp-pickup-link { display:flex; margin:14px 24px 0; text-align:center; }
+.tp-quote-layout [id] { scroll-margin-top:130px; }
+@media(max-width:979px) { .tp-home-photo-hero .tp-hero-grid { grid-template-columns:1fr; } .tp-hero-photo { min-height:400px; } }
+@media(max-width:760px) { .tp-pickup-grid { grid-template-columns:1fr; } .tp-carousel-heading { align-items:flex-end; } .tp-carousel-controls button { width:44px;height:44px; } .tp-carousel-heading .tp-section-title { font-size:38px; } .tp-hero-photo { min-height:360px;border-radius:20px; } .tp-carousel-card { flex-basis:85%; } }
+@media(prefers-reduced-motion:reduce) { .tp-carousel-track { scroll-behavior:auto; } }
+
+.tp-feature-photo { margin-inline:-24px; }

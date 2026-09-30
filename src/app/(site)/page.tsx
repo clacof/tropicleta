@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { CatalogIcon } from "@/components/CatalogIcon";
+import Image from "next/image";
+import { ServiceCarousel } from "@/components/ServiceCarousel";
 import { formatCLP } from "@/lib/format";
 import { getFeaturedProducts, getHomeServices } from "@/lib/queries";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { site } from "@/data/site";
 import { WA_CONSULTAR, WA_COORDINAR } from "@/lib/whatsapp";
 import { WorkshopGallery } from "@/components/WorkshopGallery";
-import { AnimatedEmblem } from "@/components/AnimatedEmblem";
 import { MobileWorkshop, PickupRates } from "@/components/MobileWorkshop";
 
 const localBusinessJsonLd = {
@@ -28,7 +28,7 @@ const localBusinessJsonLd = {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [{ featured: featuredServices, categories }, featuredProducts] = await Promise.all([
+  const [{ featured: featuredServices }, featuredProducts] = await Promise.all([
     getHomeServices(),
     getFeaturedProducts(4),
   ]);
@@ -41,7 +41,7 @@ export default async function HomePage() {
       />
 
       {/* ================= HERO ================= */}
-      <section className="tp-hero" aria-labelledby="tp-main-title">
+      <section className="tp-hero tp-home-photo-hero" aria-labelledby="tp-main-title">
         <div className="tp-shell">
           <div className="tp-hero-grid">
             <div>
@@ -70,7 +70,7 @@ export default async function HomePage() {
                   Coordinar por WhatsApp
                 </a>
                 <Link className="tp-btn tp-btn-secondary" href="/servicios/">
-                  Ver servicios
+                  Servicios y cotización
                 </Link>
                 <Link className="tp-btn tp-btn-secondary" href="/tienda/">
                   Ir a la tienda
@@ -78,9 +78,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="tp-hero-brand">
-              <AnimatedEmblem />
-            </div>
+            <div className="tp-hero-photo"><Image src="/taller/taller.jpg" alt="Nuestro furgón y taller Tropicleta en Tierra Amarilla" fill sizes="(max-width: 979px) 100vw, 55vw" preload /><div className="tp-photo-caption"><span>Tierra Amarilla · Atacama</span><strong>Un taller de verdad.<br />Historias sobre dos ruedas.</strong></div></div>
             <aside className="tp-trust tp-hero-trust" aria-label="Información de atención Tropicleta">
               <div className="tp-trust-item">
                 <div className="tp-trust-label">Diagnóstico</div>
@@ -99,6 +97,8 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <ServiceCarousel />
+
       {/* ================= SERVICIOS DESTACADOS ================= */}
       <section className="tp-section">
         <div className="tp-shell">
@@ -112,6 +112,7 @@ export default async function HomePage() {
             {featuredServices.map((s, i) => (
               <Link key={s.slug} className="tp-service-card" href={`/servicios/${s.slug}/`}>
                 <div>
+                  <div className="tp-feature-photo"><Image src={s.categorySlug === "suspensiones" ? "/taller/suspension.jpg" : s.categorySlug === "transmision" ? "/taller/ultrasonido.jpg" : "/taller/rodamientos.jpg"} alt={s.name} fill sizes="(max-width: 760px) 100vw, 33vw" /></div>
                   <div className="tp-service-number">
                     {String(i + 1).padStart(2, "0")} / {s.categoryName.toUpperCase()}
                   </div>
@@ -125,23 +126,6 @@ export default async function HomePage() {
             ))}
           </div>
 
-          {/* CATEGORÍAS */}
-          <div className="tp-category-wrap">
-            <h3 className="tp-display tp-category-heading">Explora el catálogo</h3>
-            <div className="tp-category-grid">
-              {categories.map((c) => (
-                <Link key={c.slug} className="tp-category" href={`/servicios/#${c.slug}`}>
-                  <CatalogIcon slug={c.slug} />
-                  {c.name}
-                </Link>
-              ))}
-            </div>
-            <div className="tp-actions tp-category-actions">
-              <Link className="tp-btn tp-btn-primary" href="/servicios/">
-                Ver catálogo completo
-              </Link>
-            </div>
-          </div>
         </div>
       </section>
 
