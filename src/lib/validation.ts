@@ -67,6 +67,8 @@ export const bookingSchema = z
       .optional()
       .transform((v) => v === "on"),
     pickupCommune: z.string().optional(),
+    transportMode: z.enum(["both", "pickup", "delivery"]).default("both"),
+    firstService: z.string().optional().transform(v => v === "on"),
     pickupAddress: z.string().trim().max(200).optional(),
     notes: z.string().trim().max(1000).optional(),
     website: z.string().max(0, "spam").optional(),
@@ -76,7 +78,7 @@ export const bookingSchema = z
     if (!deliveryCommunes.includes(d.pickupCommune as never))
       ctx.addIssue({ code: "custom", path: ["pickupCommune"], message: "Elige una comuna con cobertura" });
     if (!d.pickupAddress || d.pickupAddress.length < 5)
-      ctx.addIssue({ code: "custom", path: ["pickupAddress"], message: "Ingresa la dirección de retiro" });
+      ctx.addIssue({ code: "custom", path: ["pickupAddress"], message: "Ingresa la dirección para el transporte" });
   });
 
 export const checkoutSchema = z

@@ -10,4 +10,14 @@ assert.equal(serviceQuote([{...services[0], price: null}]).pending, true);
 assert.equal(serviceQuote([{...services[0], price: null}]).total, 0);
 assert.equal(serviceQuote([{...services[0], priceFrom: true}]).from, true);
 assert.equal(serviceQuote([]).total, 0);
+for (const [zone, cost] of [["Tierra Amarilla", 3000], ["Paipote", 8000], ["Copiapó", 12000]] as const) {
+  for (const mode of ["pickup", "delivery"] as const) {
+    assert.equal(serviceQuote(services, true, zone, mode).total, 50000 + cost);
+    assert.equal(serviceQuote(services, true, zone, mode, true).total, 45000 + cost);
+  }
+}
+assert.equal(serviceQuote(services, true, "Copiapó", "both", true).total, 65000);
+assert.equal(serviceQuote(services, false, "", "both", true).discount, 5000);
+assert.equal(serviceQuote([], true, "Paipote", "both", true).total, 15000);
+assert.equal(serviceQuote(services, true, "", "both", true).pending, true);
 console.log("Cálculos de cotización verificados.");

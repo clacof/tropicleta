@@ -61,7 +61,7 @@ export function Footer() {
               <li>
                 <a href={`mailto:${site.email}`}>{site.email}</a>
               </li>
-              <li>{site.location}</li>
+              <li>{site.address}</li>
               {site.hours.slice(0, 2).map((h) => (
                 <li key={h.days}>
                   {h.days}: {h.time}

@@ -18,6 +18,7 @@ const localBusinessJsonLd = {
   areaServed: site.coverage,
   address: {
     "@type": "PostalAddress",
+    streetAddress: "Carlos Condell 105",
     addressLocality: "Tierra Amarilla",
     addressRegion: "Atacama",
     addressCountry: "CL",

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { formatCLP } from "@/lib/format";
 import { whatsappUrl } from "@/lib/whatsapp";
-import { serviceQuote, type QuoteService } from "@/lib/service-quote";
+import { serviceQuote, pickupPrices, oneWayPrices, transportLabels, type TransportMode, type QuoteService } from "@/lib/service-quote";
 import { matchesSearch } from "@/lib/catalog-search";
 import { useActionState, useState } from "react";
 import { createBooking } from "@/actions/booking";
@@ -20,8 +20,10 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
   const [query, setQuery] = useState("");
   const [pickup, setPickup] = useState(false);
   const [commune, setCommune] = useState("");
+  const [transportMode, setTransportMode] = useState<TransportMode>("both");
+  const [firstService, setFirstService] = useState(false);
   const chosen = catalog.flatMap(c => c.services).filter(s => selected.has(s.slug));
-  const quote = serviceQuote(chosen, pickup, commune);
+  const quote = serviceQuote(chosen, pickup, commune, transportMode, firstService);
   const toggle = (slug: string) => setSelected(prev => {
     const next = new Set(prev);
     if (next.has(slug)) next.delete(slug); else if (next.size < 10) next.add(slug);
@@ -29,7 +31,9 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
   });
   const priceLabel = (s: QuoteService) => s.price === null ? "A cotizar" : (s.priceFrom ? "Desde " : "") + formatCLP(s.price);
   const message = ["Hola Tropicleta, quiero solicitar esta cotización:", ...chosen.map(s => s.name + ": " + priceLabel(s)),
-    ...(pickup ? ["Retiro + entrega: " + (commune || "zona por definir") + " · " + (quote.transport === null ? "A cotizar" : formatCLP(quote.transport))] : []),
+    "Subtotal de servicios: " + formatCLP(quote.subtotal),
+    ...(firstService ? ["Primer servicio: descuento 10% en servicios · -" + formatCLP(quote.discount)] : []),
+    ...(pickup ? [transportLabels[transportMode] + ": " + (commune || "zona por definir") + " · " + (quote.transport === null ? "A cotizar" : formatCLP(quote.transport))] : []),
     "Total estimado: " + formatCLP(quote.total), ...(quote.pending ? ["Hay valores pendientes de cotizar."] : []),
     "Sujeto a diagnóstico y confirmación del taller."].join("\n");
   const val = (k: string) => (typeof state.values?.[k] === "string" ? (state.values[k] as string) : undefined);
@@ -113,16 +117,19 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
         <span className="tp-hint">Es una preferencia: te confirmamos la hora exacta por WhatsApp.</span>
       </fieldset>
 
-      <fieldset className="tp-fieldset">
-        <legend className="tp-label">4. Retiro a domicilio</legend>
+      <fieldset className="tp-fieldset" id="retiro-entrega">
+        <legend className="tp-label">4. Retiro y entrega</legend>
         <label className="tp-option">
           <input type="checkbox" name="pickup" checked={pickup} onChange={(e) => setPickup(e.target.checked)} />
           <span>
-            Quiero que retiren y entreguen mi {val("vehicleType") === "scooter" ? "scooter" : "bici"}
-            <small>Sectores definidos de Tierra Amarilla, Paipote y Copiapó. Retiro + entrega: Tierra Amarilla $5.000, Paipote $15.000, Copiapó $20.000.</small>
+            Quiero retiro o entrega a domicilio
+            <small>Selecciona el trayecto y tu zona. El transporte se suma a la cotización.</small>
           </span>
         </label>
         {pickup && (
+          <>
+          <div className="tp-options">{(Object.keys(transportLabels) as TransportMode[]).map(mode => <label key={mode} className="tp-option"><input type="radio" name="transportMode" value={mode} checked={transportMode === mode} onChange={() => setTransportMode(mode)} /><span>{transportLabels[mode]}</span></label>)}</div>
+          {err("transportMode")}
           <div className="tp-form-grid">
             <Field name="pickupCommune" label="Comuna / sector" as="select" state={state} value={commune} onChange={e => setCommune(e.target.value)}>
               <option value="" disabled>
@@ -130,12 +137,13 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
               </option>
               {deliveryCommunes.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {c} · {formatCLP((transportMode === "both" ? pickupPrices : oneWayPrices)[c])}
                 </option>
               ))}
             </Field>
             <Field name="pickupAddress" label="Dirección" state={state} autoComplete="street-address" />
           </div>
+          </>
         )}
       </fieldset>
 
@@ -157,10 +165,12 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
       </div>
       <aside className="tp-local-box tp-quote-summary" aria-label="Tu cotización">
         <h2>Tu cotización</h2>
+        <label className="tp-option"><input type="checkbox" name="firstService" checked={firstService} onChange={e => setFirstService(e.target.checked)} /><span>Es mi primer servicio en Tropicleta<small>10% de descuento en el total de servicios. No incluye retiro, entrega ni repuestos.</small></span></label>
         {chosen.length === 0 ? <p>Selecciona servicios para ver el desglose y el total.</p> : <ul className="tp-quote-items">{chosen.map(s => <li key={s.slug}><span>{s.name}<small>{priceLabel(s)}</small></span><button type="button" className="tp-btn tp-btn-secondary tp-btn-sm" onClick={() => toggle(s.slug)} aria-label={"Quitar " + s.name}>Quitar</button></li>)}</ul>}
         <dl className="tp-dl">
           <div><dt>Servicios</dt><dd>{formatCLP(quote.subtotal)}</dd></div>
-          {pickup && <div><dt>Retiro + entrega</dt><dd>{quote.transport === null ? "Elige tu zona" : formatCLP(quote.transport)}</dd></div>}
+          {firstService && <div><dt>Primer servicio −10%</dt><dd>−{formatCLP(quote.discount)}</dd></div>}
+          {pickup && <div><dt>{transportLabels[transportMode]}{commune ? ` · ${commune}` : ""}</dt><dd>{quote.transport === null ? "Elige tu zona" : formatCLP(quote.transport)}</dd></div>}
           <div aria-live="polite" aria-atomic="true"><dt>{quote.from ? "Total estimado desde" : "Total estimado"}</dt><dd className="tp-quote-total">{formatCLP(quote.total)}</dd></div>
         </dl>
         {quote.pending && <p>Hay servicios o transporte pendientes de cotizar; no están incluidos en la suma.</p>}

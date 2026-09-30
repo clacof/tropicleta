@@ -6,7 +6,7 @@ import { db, schema } from "@/db";
 import { adminEmail, emailLayout, escapeHtml, sendEmail } from "@/lib/email";
 import { formToObject, zodErrors, type FormState } from "@/lib/forms";
 import { displayPhone, formatDate, shortCode } from "@/lib/format";
-import { serviceQuote } from "@/lib/service-quote";
+import { serviceQuote, transportLabels } from "@/lib/service-quote";
 import { formatCLP } from "@/lib/format";
 import { bookingSchema } from "@/lib/validation";
 
@@ -26,8 +26,8 @@ export async function createBooking(_prev: FormState, fd: FormData): Promise<For
     if (!found.length || found.length !== new Set(d.services).size)
       return { errors: { services: "Uno de los servicios ya no está disponible. Vuelve a seleccionarlos." }, values };
 
-    const quote = serviceQuote(found, d.pickup, d.pickupCommune);
-    const quoteText = found.map(s => s.name + ": " + (s.price === null ? "A cotizar" : (s.priceFrom ? "Desde " : "") + formatCLP(s.price))).join("; ") + (d.pickup ? "; Retiro + entrega: " + (quote.transport === null ? "A cotizar" : formatCLP(quote.transport)) : "") + "; Total estimado: " + formatCLP(quote.total) + (quote.pending ? "; Valores pendientes de cotizar." : "") + "; Sujeto a diagnóstico y confirmación.";
+    const quote = serviceQuote(found, d.pickup, d.pickupCommune, d.transportMode, d.firstService);
+    const quoteText = found.map(s => s.name + ": " + (s.price === null ? "A cotizar" : (s.priceFrom ? "Desde " : "") + formatCLP(s.price))).join("; ") + "; Subtotal de servicios: " + formatCLP(quote.subtotal) + (d.firstService ? "; Primer servicio, descuento 10% en servicios: -" + formatCLP(quote.discount) : "") + (d.pickup ? "; " + transportLabels[d.transportMode] + ": " + (quote.transport === null ? "A cotizar" : formatCLP(quote.transport)) : "") + "; Total estimado: " + formatCLP(quote.total) + (quote.pending ? "; Valores pendientes de cotizar." : "") + "; Sujeto a diagnóstico y confirmación.";
     code = shortCode("TP");
     await db.insert(schema.bookings).values({
       code,
@@ -53,7 +53,7 @@ export async function createBooking(_prev: FormState, fd: FormData): Promise<For
       <p>Servicios: ${found.map((s) => escapeHtml(s.name)).join(", ")}</p>
       <p>${escapeHtml(quoteText)}</p>
       <p>Fecha preferida: ${formatDate(d.preferredDate)}, en la ${slot}</p>
-      ${d.pickup ? `<p>Retiro en ${escapeHtml(d.pickupCommune!)}: ${escapeHtml(d.pickupAddress!)}</p>` : ""}
+      ${d.pickup ? `<p>${transportLabels[d.transportMode]} en ${escapeHtml(d.pickupCommune!)}: ${escapeHtml(d.pickupAddress!)}</p>` : ""}
       ${d.notes ? `<p>Notas: ${escapeHtml(d.notes)}</p>` : ""}`;
 
     await Promise.all([
