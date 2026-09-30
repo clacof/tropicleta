@@ -6,3 +6,15 @@
 .tp-catalog-empty h2{margin:0 0 12px;font-size:24px}
 .tp-draft-note{padding:18px;border:1px solid #7b5b20;border-radius:12px;background:#2a2112;margin-bottom:24px}
 @media(max-width:540px){.tp-catalog-search .tp-btn{flex:1 1 auto}.tp-catalog-search-field{flex-basis:100%}}
+
+.tp-quote-layout { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:32px; align-items:start; }
+.tp-quote-layout > div { display:grid; gap:24px; min-width:0; }
+.tp-quote-summary { position:sticky; top:110px; }
+.tp-quote-items { list-style:none; padding:0; display:grid; gap:16px; }
+.tp-quote-items li { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+.tp-quote-items small { display:block; }
+.tp-quote-total { font-size:1.6rem; font-weight:800; }
+.tp-quote-layout [hidden] { display:none; }
+.tp-quote-layout .tp-option { align-items:start; }
+.tp-quote-layout .tp-option a { display:block; font-size:.85rem; margin-top:8px; }
+@media(max-width:900px) { .tp-quote-layout { grid-template-columns:1fr; } .tp-quote-summary { position:static; grid-row:1; } }

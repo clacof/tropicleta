@@ -19,7 +19,7 @@ export default async function GraciasAgendarPage({ searchParams }: Props) {
 
   const slot = b.timeSlot === "manana" ? "mañana" : "tarde";
   const wa = whatsappUrl(
-    `Hola Tropicleta, envié la solicitud ${b.code}: ${b.serviceNames.join(", ")} para el ${formatDate(b.preferredDate)} en la ${slot}.`,
+    `Hola Tropicleta, envié la solicitud ${b.code}: ${b.serviceNames.join(", ")}. ${b.notes ?? ""} Para el ${formatDate(b.preferredDate)} en la ${slot}.`,
   );
 
   return (
@@ -48,6 +48,10 @@ export default async function GraciasAgendarPage({ searchParams }: Props) {
             <div>
               <dt>Servicios</dt>
               <dd>{b.serviceNames.join(", ")}</dd>
+            </div>
+            <div>
+              <dt>Detalle de la cotización</dt>
+              <dd style={{ whiteSpace: "pre-wrap" }}>{b.notes ?? "Consulta los valores con el taller."}</dd>
             </div>
             <div>
               <dt>Vehículo</dt>

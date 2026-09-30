@@ -1,5 +1,10 @@
 "use client";
 
+import Link from "next/link";
+import { formatCLP } from "@/lib/format";
+import { whatsappUrl } from "@/lib/whatsapp";
+import { serviceQuote, type QuoteService } from "@/lib/service-quote";
+import { matchesSearch } from "@/lib/catalog-search";
 import { useActionState, useState } from "react";
 import { createBooking } from "@/actions/booking";
 import { Field } from "@/components/Field";
@@ -7,15 +12,26 @@ import { SubmitButton } from "@/components/SubmitButton";
 import { deliveryCommunes } from "@/data/shop";
 import type { FormState } from "@/lib/forms";
 
-type Catalog = { slug: string; name: string; services: { slug: string; name: string }[] }[];
+type Catalog = { slug: string; name: string; services: (QuoteService & { summary?: string | null })[] }[];
 
 export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalog; preselected?: string; minDate: string }) {
   const [state, action] = useActionState<FormState, FormData>(createBooking, {});
-  const prevServices = state.values?.services;
-  const selected = new Set(
-    prevServices ? (Array.isArray(prevServices) ? prevServices : [prevServices]) : preselected ? [preselected] : [],
-  );
-  const [pickup, setPickup] = useState(state.values?.pickup === "on");
+  const [selected, setSelected] = useState(() => new Set(preselected ? [preselected] : []));
+  const [query, setQuery] = useState("");
+  const [pickup, setPickup] = useState(false);
+  const [commune, setCommune] = useState("");
+  const chosen = catalog.flatMap(c => c.services).filter(s => selected.has(s.slug));
+  const quote = serviceQuote(chosen, pickup, commune);
+  const toggle = (slug: string) => setSelected(prev => {
+    const next = new Set(prev);
+    if (next.has(slug)) next.delete(slug); else if (next.size < 10) next.add(slug);
+    return next;
+  });
+  const priceLabel = (s: QuoteService) => s.price === null ? "A cotizar" : (s.priceFrom ? "Desde " : "") + formatCLP(s.price);
+  const message = ["Hola Tropicleta, quiero solicitar esta cotización:", ...chosen.map(s => s.name + ": " + priceLabel(s)),
+    ...(pickup ? ["Retiro + entrega: " + (commune || "zona por definir") + " · " + (quote.transport === null ? "A cotizar" : formatCLP(quote.transport))] : []),
+    "Total estimado: " + formatCLP(quote.total), ...(quote.pending ? ["Hay valores pendientes de cotizar."] : []),
+    "Sujeto a diagnóstico y confirmación del taller."].join("\n");
   const val = (k: string) => (typeof state.values?.[k] === "string" ? (state.values[k] as string) : undefined);
   const err = (k: string) =>
     state.errors?.[k] && (
@@ -25,7 +41,8 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
     );
 
   return (
-    <form action={action} className="tp-form" noValidate>
+    <form action={action} className="tp-form tp-quote-layout" noValidate>
+      <div>
       {state.message && (
         <div className="tp-alert" role="alert">
           {state.message}
@@ -33,22 +50,26 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
       )}
 
       <fieldset className="tp-fieldset">
-        <legend className="tp-label">1. ¿Qué necesitas?</legend>
+        <legend className="tp-label">1. Elige tus servicios</legend>
+        <label className="tp-field">Buscar un servicio<input className="tp-input" type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Frenos, cadena, suspensión…" /></label>
+        <p className="tp-hint">Puedes elegir hasta 10 servicios. Los precios están en pesos chilenos.</p>
+        {chosen.map(s => <input key={s.slug} type="hidden" name="services" value={s.slug} />)}
         {catalog.map((c) => (
-          <div key={c.slug} style={{ display: "grid", gap: 8 }}>
+          <div key={c.slug} hidden={!c.services.some(s => matchesSearch(query, s.name, s.summary, c.name))} style={{ display: "grid", gap: 8 }}>
             <span className="tp-hint" style={{ fontWeight: 800, textTransform: "uppercase", letterSpacing: 1 }}>
               {c.name}
             </span>
             <div className="tp-options tp-options-2">
-              {c.services.map((s) => (
+              {c.services.filter(s => matchesSearch(query, s.name, s.summary, c.name)).map((s) => (
                 <label key={s.slug} className="tp-option">
-                  <input type="checkbox" name="services" value={s.slug} defaultChecked={selected.has(s.slug)} />
-                  <span>{s.name}</span>
+                  <input type="checkbox" checked={selected.has(s.slug)} onChange={() => toggle(s.slug)} disabled={!selected.has(s.slug) && selected.size >= 10} />
+                  <span>{s.name}<small>{priceLabel(s)}</small>{s.summary && <small>{s.summary}</small>}<Link href={`/servicios/${s.slug}/`}>Ver detalle</Link></span>
                 </label>
               ))}
             </div>
           </div>
         ))}
+        {!catalog.some(c => c.services.some(s => matchesSearch(query, s.name, s.summary, c.name))) && <p>No encontramos servicios con esa búsqueda.</p>}
         {err("services")}
       </fieldset>
 
@@ -98,12 +119,12 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
           <input type="checkbox" name="pickup" checked={pickup} onChange={(e) => setPickup(e.target.checked)} />
           <span>
             Quiero que retiren y entreguen mi {val("vehicleType") === "scooter" ? "scooter" : "bici"}
-            <small>Sectores definidos de Tierra Amarilla, Paipote y Copiapó. Costo según sector.</small>
+            <small>Sectores definidos de Tierra Amarilla, Paipote y Copiapó. Retiro + entrega: Tierra Amarilla $5.000, Paipote $15.000, Copiapó $20.000.</small>
           </span>
         </label>
         {pickup && (
           <div className="tp-form-grid">
-            <Field name="pickupCommune" label="Comuna / sector" as="select" state={state} defaultValue="">
+            <Field name="pickupCommune" label="Comuna / sector" as="select" state={state} value={commune} onChange={e => setCommune(e.target.value)}>
               <option value="" disabled>
                 Elige una opción
               </option>
@@ -131,8 +152,22 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
       <input type="text" name="website" tabIndex={-1} autoComplete="off" hidden aria-hidden="true" />
 
       <div>
-        <SubmitButton pendingText="Enviando solicitud…">Solicitar hora</SubmitButton>
+        <SubmitButton pendingText="Enviando solicitud…">Enviar cotización y solicitar hora</SubmitButton>
       </div>
+      </div>
+      <aside className="tp-local-box tp-quote-summary" aria-label="Tu cotización">
+        <h2>Tu cotización</h2>
+        {chosen.length === 0 ? <p>Selecciona servicios para ver el desglose y el total.</p> : <ul className="tp-quote-items">{chosen.map(s => <li key={s.slug}><span>{s.name}<small>{priceLabel(s)}</small></span><button type="button" className="tp-btn tp-btn-secondary tp-btn-sm" onClick={() => toggle(s.slug)} aria-label={"Quitar " + s.name}>Quitar</button></li>)}</ul>}
+        <dl className="tp-dl">
+          <div><dt>Servicios</dt><dd>{formatCLP(quote.subtotal)}</dd></div>
+          {pickup && <div><dt>Retiro + entrega</dt><dd>{quote.transport === null ? "Elige tu zona" : formatCLP(quote.transport)}</dd></div>}
+          <div aria-live="polite" aria-atomic="true"><dt>{quote.from ? "Total estimado desde" : "Total estimado"}</dt><dd className="tp-quote-total">{formatCLP(quote.total)}</dd></div>
+        </dl>
+        {quote.pending && <p>Hay servicios o transporte pendientes de cotizar; no están incluidos en la suma.</p>}
+        <p className="tp-hint">El taller confirma el valor final tras el diagnóstico gratuito. Repuestos y trabajos adicionales se cotizan aparte. Revisaremos si los servicios elegidos incluyen trabajos en común.</p>
+        {chosen.length > 0 && <a className="tp-btn tp-btn-primary" href={whatsappUrl(message)} target="_blank" rel="noopener noreferrer">Enviar cotización por WhatsApp</a>}
+        <p className="tp-hint">También puedes completar tus datos y fecha preferida para registrar la solicitud.</p>
+      </aside>
     </form>
   );
 }

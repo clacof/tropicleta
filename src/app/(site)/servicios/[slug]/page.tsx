@@ -65,8 +65,8 @@ export default async function ServicioPage({ params }: Props) {
               Confirma alcance y disponibilidad al coordinar. Los repuestos o trabajos adicionales no indicados en la ficha se cotizan aparte.
             </p>
             <div className="tp-stack" style={{ marginTop: 18 }}>
-              <Link className="tp-btn tp-btn-primary tp-btn-block" href={`/agendar/?servicio=${s.slug}`}>
-                Solicitar hora
+              <Link className="tp-btn tp-btn-primary tp-btn-block" href={`/servicios/?servicio=${s.slug}`}>
+                Agregar a mi cotización
               </Link>
               <a
                 className="tp-btn tp-btn-secondary tp-btn-block"
