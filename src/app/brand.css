@@ -1,5 +1,13 @@
 .tp-brand-lockup { display: inline-flex; align-items: center; gap: 10px; white-space: nowrap; }
 .tp-brand-mascot { width: 48px; height: auto; transform-origin: 50% 85%; }
+.tp-brand-wordmark { width: 230px; height: auto; }
+.tp-header .tp-brand-mascot { animation: tp-header-mascot 5s ease-in-out infinite; }
+@keyframes tp-header-mascot { 0%, 75%, 100% { transform: rotate(0); } 82% { transform: rotate(-5deg); } 90% { transform: rotate(4deg); } }
+@media (prefers-reduced-motion: reduce) { .tp-header .tp-brand-mascot { animation: none; } }
+@media (max-width: 1279px) { .tp-header .tp-brand-wordmark { width: 195px; } }
+@media (max-width: 719px) { .tp-header .tp-brand-wordmark { width: 160px; } }
+@media (max-width: 379px) { .tp-header .tp-brand-wordmark { width: 135px; } }
+.tp-admin-side .tp-brand-wordmark { width: 150px; }
 .tp-logo:hover .tp-brand-mascot, .tp-logo:focus-visible .tp-brand-mascot { animation: tp-em-bite .55s ease-in-out; }
 .tp-logo { padding-top: 0; flex-shrink: 0; }
 :root { --tp-header-h: 104px; }

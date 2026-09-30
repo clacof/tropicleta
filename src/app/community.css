@@ -63,3 +63,13 @@
 .tp-instagram-gallery .tp-workshop-caption h3 { font-size:17px; }
 
 .tp-instagram-gallery [id] { scroll-margin-top:125px; }
+.tp-mobile-video-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; align-items:start; }
+.tp-mobile-video-card { min-width:0; border:1px solid #383838; border-radius:18px; overflow:hidden; background:#101010; }
+.tp-mobile-video-embed { background:#151515; min-height:440px; color:#fff; }
+.tp-mobile-video-embed .instagram-media { width:100% !important; min-width:0 !important; max-width:100% !important; margin:0 !important; border:0 !important; box-shadow:none !important; }
+.tp-mobile-video-embed blockquote { padding:24px; min-height:440px; display:grid; place-items:center; background:radial-gradient(circle at center,#654019,#171717 75%); }
+.tp-mobile-video-embed blockquote a { display:grid; gap:18px; text-align:center; color:#fff; }
+.tp-video-play { font-size:54px; color:#ffad32; }
+.tp-mobile-video-link { display:inline-block; margin-top:18px; color:#ffad32; font-weight:700; }
+@media(max-width:1099px) { .tp-mobile-video-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:699px) { .tp-mobile-video-grid { grid-template-columns:1fr; max-width:480px; margin-inline:auto; } }

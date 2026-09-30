@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/PageHero";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { whatsappUrl } from "@/lib/whatsapp";
+import { MobileWorkshopGallery } from "@/components/MobileWorkshopGallery";
 
 export const metadata: Metadata = {
   title: "Taller móvil para eventos",
@@ -54,6 +55,8 @@ export default function EventosPage() {
           </div>
         </div>
       </section>
+
+      <MobileWorkshopGallery />
 
       <section className="tp-section tp-shop" id="cotizar">
         <div className="tp-shell tp-two-col">

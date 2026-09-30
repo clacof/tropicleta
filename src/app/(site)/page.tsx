@@ -6,7 +6,6 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { site } from "@/data/site";
 import { WA_CONSULTAR, WA_COORDINAR } from "@/lib/whatsapp";
 import { WorkshopGallery } from "@/components/WorkshopGallery";
-import { AnimatedEmblem } from "@/components/AnimatedEmblem";
 
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
@@ -75,7 +74,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="tp-hero-showcase"><div className="tp-hero-brand"><AnimatedEmblem /></div><ServiceCarousel /></div>
+            <div className="tp-hero-showcase"><ServiceCarousel /></div>
           </div>
         </div>
       </section>
