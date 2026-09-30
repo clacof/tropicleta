@@ -13,8 +13,8 @@
 
 /* Portada fotográfica, emblema y catálogo de una lámina */
 .tp-home-photo-hero { background:#0c1012; padding-block:38px; }
-.tp-home-photo-hero > .tp-hero-background { object-fit:cover; object-position:65% center; opacity:.9; }
-.tp-home-photo-hero::before { content:""; position:absolute; inset:0; z-index:1; background:linear-gradient(90deg,#090d10d9 0%,#090d1060 47%,#090d10bc 74%,#090d10f5 100%),linear-gradient(0deg,#090d10 0%,transparent 35%,#090d1038 100%); }
+.tp-home-photo-hero > .tp-hero-background { width:81% !important; object-fit:cover; object-position:right center; opacity:.95; mask-image:linear-gradient(90deg,#000 0%,#000 76%,transparent 100%); }
+.tp-home-photo-hero::before { content:""; position:absolute; inset:0; z-index:1; background:linear-gradient(90deg,#090d10bf 0%,#090d1080 35%,#090d1020 55%,#090d10 78%),linear-gradient(0deg,#090d10 0%,transparent 22%,#090d1020 100%); }
 .tp-home-photo-hero::after { display:none; }
 .tp-home-photo-hero .tp-hero-grid { z-index:2; gap:30px 60px; grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr); align-items:center; }
 .tp-home-photo-hero h1 { font-size:clamp(48px,6vw,82px); text-shadow:0 3px 24px #0008; }
@@ -37,10 +37,7 @@
 .tp-single-footer { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-top:12px; font-size:12px; }
 .tp-single-footer a { text-underline-offset:4px; }
 .tp-single-footer button { padding:6px 10px; border:1px solid #ffffff50; border-radius:20px; color:#eee; background:#111a; cursor:pointer; }
-@media(max-width:700px) { .tp-home-photo-hero .tp-hero-grid { grid-template-columns:1fr; gap:30px; } .tp-home-photo-hero > .tp-hero-background { object-fit:contain; object-position:center top; } .tp-home-photo-hero::before { background:linear-gradient(180deg,#090d1020 0%,#090d1050 35vw,#090d10 64vw); } .tp-home-photo-hero { padding-top:clamp(180px,54vw,320px); } .tp-home-photo-hero h1 { font-size:clamp(44px,10vw,66px); } .tp-hero-showcase .tp-emblem { width:160px; } .tp-home-photo-hero .tp-hero-trust { grid-column:auto; } }
-.tp-home .tp-service-card { overflow:hidden; padding-top:0; }
-.tp-feature-photo { position:relative; height:190px; margin:0 -28px 24px; }
-.tp-feature-photo img { object-fit:cover; }
+@media(max-width:700px) { .tp-home-photo-hero .tp-hero-grid { grid-template-columns:1fr; gap:30px; } .tp-home-photo-hero > .tp-hero-background { width:100% !important; object-fit:contain; object-position:center top; mask-image:none; } .tp-home-photo-hero::before { background:linear-gradient(180deg,#090d1020 0%,#090d1050 35vw,#090d10 64vw); } .tp-home-photo-hero { padding-top:clamp(180px,54vw,320px); } .tp-home-photo-hero h1 { font-size:clamp(44px,10vw,66px); } .tp-hero-showcase .tp-emblem { width:160px; } .tp-home-photo-hero .tp-hero-trust { grid-column:auto; } }
 .tp-pickup-visual { background:#1a2225; scroll-margin-top:120px; }
 .tp-pickup-grid { display:grid; grid-template-columns:1fr minmax(300px,500px); gap:clamp(30px,7vw,100px); align-items:center; }
 .tp-pickup-poster { overflow:hidden; border-radius:24px; background:#101010; padding-bottom:24px; border:1px solid #ffffff20; box-shadow:0 20px 60px #0004; }
@@ -51,4 +48,18 @@
 @media(min-width:701px) and (max-width:979px) { .tp-home-photo-hero .tp-hero-grid { grid-template-columns:minmax(0,1fr) minmax(260px,.85fr); gap:24px; } .tp-home-photo-hero h1 { font-size:clamp(44px,7vw,66px); } }
 @media(max-width:760px) { .tp-pickup-grid { grid-template-columns:1fr; } }
 
-.tp-feature-photo { margin-inline:-24px; }
+
+.tp-instagram-gallery { background:#171b1e; }
+.tp-instagram-gallery .tp-workshop-grid { max-width:1100px; margin-inline:auto; }
+.tp-instagram-gallery .tp-workshop-photo { aspect-ratio:1; }
+.tp-instagram-post { background:#0d1114; border-color:#ffffff20; border-radius:14px; }
+.tp-instagram-post-header { display:flex; align-items:center; gap:10px; padding:14px; }
+.tp-instagram-post-header > img { border-radius:50%; padding:3px; border:1px solid #ff962c; }
+.tp-instagram-post-header strong { display:block; font-size:13px; }
+.tp-instagram-post-header small { display:block; font-size:11px; color:#aaa; margin-top:2px; }
+.tp-instagram-open { margin-left:auto; color:#b9b9b9; }
+.tp-instagram-post-link { display:block; color:#c4c4c4; font-size:12px; margin-bottom:14px; }
+.tp-instagram-gallery .tp-workshop-caption { padding:18px; }
+.tp-instagram-gallery .tp-workshop-caption h3 { font-size:17px; }
+
+.tp-instagram-gallery [id] { scroll-margin-top:125px; }

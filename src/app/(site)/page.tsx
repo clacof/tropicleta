@@ -1,8 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ServiceCarousel } from "@/components/ServiceCarousel";
-import { formatCLP } from "@/lib/format";
-import { getFeaturedProducts, getHomeServices } from "@/lib/queries";
+import { getFeaturedProducts } from "@/lib/queries";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { site } from "@/data/site";
 import { WA_CONSULTAR, WA_COORDINAR } from "@/lib/whatsapp";
@@ -28,10 +27,7 @@ const localBusinessJsonLd = {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [{ featured: featuredServices }, featuredProducts] = await Promise.all([
-    getHomeServices(),
-    getFeaturedProducts(4),
-  ]);
+  const featuredProducts = await getFeaturedProducts(4);
 
   return (
     <div className="tp-home">
@@ -80,53 +76,10 @@ export default async function HomePage() {
             </div>
 
             <div className="tp-hero-showcase"><div className="tp-hero-brand"><AnimatedEmblem /></div><ServiceCarousel /></div>
-            <aside className="tp-trust tp-hero-trust" aria-label="Información de atención Tropicleta">
-              <div className="tp-trust-item">
-                <div className="tp-trust-label">Diagnóstico</div>
-                <div className="tp-trust-value">Gratuito</div>
-              </div>
-              <div className="tp-trust-item">
-                <div className="tp-trust-label">Garantía</div>
-                <div className="tp-trust-value">2 semanas</div>
-              </div>
-              <div className="tp-trust-item">
-                <div className="tp-trust-label">Atención</div>
-                <div className="tp-trust-value">Coordinación previa</div>
-              </div>
-            </aside>
           </div>
         </div>
       </section>
 
-      {/* ================= SERVICIOS DESTACADOS ================= */}
-      <section className="tp-section">
-        <div className="tp-shell">
-          <span className="tp-kicker">Taller Tropicleta</span>
-          <h2 className="tp-display tp-section-title">Servicios destacados</h2>
-          <p className="tp-section-intro">
-            Una selección de nuestros servicios. Puedes revisar el catálogo completo antes de coordinar tu atención.
-          </p>
-
-          <div className="tp-service-grid">
-            {featuredServices.map((s, i) => (
-              <Link key={s.slug} className="tp-service-card" href={`/servicios/${s.slug}/`}>
-                <div>
-                  <div className="tp-feature-photo"><Image src={s.categorySlug === "suspensiones" ? "/taller/suspension.jpg" : s.categorySlug === "transmision" ? "/taller/ultrasonido.jpg" : "/taller/rodamientos.jpg"} alt={s.name} fill sizes="(max-width: 760px) 100vw, 33vw" /></div>
-                  <div className="tp-service-number">
-                    {String(i + 1).padStart(2, "0")} / {s.categoryName.toUpperCase()}
-                  </div>
-                  <h3 className="tp-display tp-service-name">{s.name}</h3>
-                </div>
-                <div>
-                  <div className="tp-price">{s.price ? formatCLP(s.price) : "A cotizar"}</div>
-                  <div className="tp-service-link">Ver detalles →</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-        </div>
-      </section>
       {/* ================= TIENDA ================= */}
       {featuredProducts.length > 0 && <section className="tp-section tp-shop">
         <div className="tp-shell">

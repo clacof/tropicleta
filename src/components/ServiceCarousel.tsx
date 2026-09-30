@@ -26,7 +26,7 @@ export function ServiceCarousel() {
   }, []);
   useEffect(() => {
     if (paused || interacting || reducedMotion) return;
-    const timer = window.setInterval(() => { if (!document.hidden) setIndex(current => (current + 1) % slides.length); }, 8000);
+    const timer = window.setInterval(() => { if (!document.hidden) setIndex(current => (current + 1) % slides.length); }, 6500);
     return () => window.clearInterval(timer);
   }, [paused, interacting, reducedMotion, index]);
   return <section className="tp-single-carousel" aria-label="Catálogo de servicios" aria-roledescription="carrusel"
