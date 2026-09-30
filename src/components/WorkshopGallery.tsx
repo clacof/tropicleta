@@ -2,7 +2,7 @@ import Image from "next/image";
 const stories = [
   { image: "suspension", title: "Listas para volver al cerro", text: "Una Scott Spark RC lista para su próxima ruta.", post: "DRp1XCXksWw", position: "50% 40%", fit: "cover" as const },
   { image: "DbzMjzxRlXb", title: "Frank vuelve a rodar", text: "Frank y su 715 DH, de vuelta para seguir disfrutando sobre dos ruedas.", post: "DbzMjzxRlXb", position: "50% 25%", fit: "cover" as const },
-  { image: "DcTfpyzxZPE", title: "Sophie y su Trek Marlin 4", text: "Una mantención completa para acompañar a Sophie en sus próximas rutas.", post: "DcTfpyzxZPE", position: "50% 35%", fit: "cover" as const },
+  { image: "DcTfpyzxZPE-hd", title: "Sophie y su Trek Marlin 4", text: "Una mantención completa para acompañar a Sophie en sus próximas rutas.", post: "DcTfpyzxZPE", position: "50% 35%", fit: "cover" as const },
 ];
 export function WorkshopGallery() {
   return <section className="tp-section tp-workshop tp-instagram-gallery" aria-labelledby="workshop-title"><div className="tp-shell">
