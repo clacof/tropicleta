@@ -7,7 +7,7 @@ import { ProductCard } from "@/components/shop/ProductCard";
 import { site } from "@/data/site";
 import { WA_CONSULTAR, WA_COORDINAR } from "@/lib/whatsapp";
 import { WorkshopGallery } from "@/components/WorkshopGallery";
-import { MobileWorkshop, PickupRates } from "@/components/MobileWorkshop";
+import { AnimatedEmblem } from "@/components/AnimatedEmblem";
 
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
@@ -42,6 +42,7 @@ export default async function HomePage() {
 
       {/* ================= HERO ================= */}
       <section className="tp-hero tp-home-photo-hero" aria-labelledby="tp-main-title">
+        <Image className="tp-hero-background" src="/taller/equipo-tropicleta.jpeg" alt="El equipo Tropicleta junto a su furgón en Atacama" fill sizes="100vw" preload />
         <div className="tp-shell">
           <div className="tp-hero-grid">
             <div>
@@ -78,7 +79,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="tp-hero-photo"><Image src="/taller/taller.jpg" alt="Nuestro furgón y taller Tropicleta en Tierra Amarilla" fill sizes="(max-width: 979px) 100vw, 55vw" preload /><div className="tp-photo-caption"><span>Tierra Amarilla · Atacama</span><strong>Un taller de verdad.<br />Historias sobre dos ruedas.</strong></div></div>
+            <div className="tp-hero-showcase"><div className="tp-hero-brand"><AnimatedEmblem /></div><ServiceCarousel /></div>
             <aside className="tp-trust tp-hero-trust" aria-label="Información de atención Tropicleta">
               <div className="tp-trust-item">
                 <div className="tp-trust-label">Diagnóstico</div>
@@ -96,8 +97,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      <ServiceCarousel />
 
       {/* ================= SERVICIOS DESTACADOS ================= */}
       <section className="tp-section">
@@ -128,8 +127,6 @@ export default async function HomePage() {
 
         </div>
       </section>
-
-      <MobileWorkshop />
       {/* ================= TIENDA ================= */}
       {featuredProducts.length > 0 && <section className="tp-section tp-shop">
         <div className="tp-shell">
@@ -174,7 +171,6 @@ export default async function HomePage() {
 
       {/* ================= CONVERSIÓN LOCAL ================= */}
       <WorkshopGallery />
-      <PickupRates />
       <section className="tp-section">
         <div className="tp-shell">
           <div className="tp-local-box">
