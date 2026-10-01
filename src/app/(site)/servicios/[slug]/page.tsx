@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -14,6 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getService(slug);
   if (!data) return { title: "Servicio no encontrado" };
   return {
+    alternates: { canonical: siteUrl(`/servicios/${data.service.slug}/`) },
     title: data.service.name,
     description: data.service.summary ?? `${data.service.name} en Tropicleta, Tierra Amarilla.`,
   };

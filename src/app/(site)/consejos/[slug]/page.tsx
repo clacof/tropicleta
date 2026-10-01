@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -12,7 +13,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = getPost((await params).slug);
-  return post ? { title: post.title, description: post.excerpt } : { title: "Artículo no encontrado" };
+  return post ? { alternates: { canonical: siteUrl(`/consejos/${post.slug}/`) }, title: post.title, description: post.excerpt } : { title: "Artículo no encontrado" };
 }
 
 export default async function PostPage({ params }: Props) {

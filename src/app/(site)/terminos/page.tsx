@@ -1,7 +1,8 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
 
-export const metadata: Metadata = { title: "Términos y condiciones", robots: { index: true } };
+export const metadata: Metadata = { alternates: { canonical: siteUrl("/terminos/") }, title: "Términos y condiciones", robots: { index: true } };
 
 export default function TerminosPage() {
   return (

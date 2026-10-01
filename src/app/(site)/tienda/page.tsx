@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CatalogIcon } from "@/components/CatalogIcon";
@@ -10,7 +11,7 @@ import { getProductCategories, getProducts, type ProductSort } from "@/lib/queri
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = { alternates: { canonical: siteUrl("/tienda/") },
   title: "Tienda",
   description: "Productos seleccionados para ciclistas, elegidos para complementar el trabajo del taller Tropicleta.",
 };

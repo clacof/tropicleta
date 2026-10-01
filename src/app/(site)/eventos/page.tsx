@@ -1,10 +1,11 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import { PageHero } from "@/components/PageHero";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { MobileWorkshopGallery } from "@/components/MobileWorkshopGallery";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = { alternates: { canonical: siteUrl("/eventos/") },
   title: "Taller móvil para eventos",
   description: "Llevamos el taller Tropicleta a cicletadas, carreras y eventos ciclistas en la Región de Atacama. Cotiza tu evento.",
 };

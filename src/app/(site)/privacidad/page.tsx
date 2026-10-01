@@ -1,7 +1,8 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
 
-export const metadata: Metadata = { title: "Política de privacidad" };
+export const metadata: Metadata = { alternates: { canonical: siteUrl("/privacidad/") }, title: "Política de privacidad" };
 
 export default function PrivacidadPage() {
   return (

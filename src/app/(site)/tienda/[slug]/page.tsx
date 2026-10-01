@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,6 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getProduct(slug);
   if (!data) return { title: "Producto no encontrado" };
   return {
+    alternates: { canonical: siteUrl(`/tienda/${data.product.slug}/`) },
     title: data.product.name,
     description: data.product.description ?? undefined,
     openGraph: data.product.images[0] ? { images: [data.product.images[0]] } : undefined,

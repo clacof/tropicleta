@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { siteUrl } from "@/lib/site-url";
 import Link from "next/link";
 import Image from "next/image";
 import { ServiceCarousel } from "@/components/ServiceCarousel";
@@ -8,21 +10,10 @@ import { WA_CONSULTAR, WA_COORDINAR } from "@/lib/whatsapp";
 import { WorkshopGallery } from "@/components/WorkshopGallery";
 import { AnimatedEmblem } from "@/components/AnimatedEmblem";
 
-const localBusinessJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "BicycleStore",
-  name: "Tropicleta",
-  url: "https://tropicleta.com",
-  logo: "https://tropicleta.com/brand/tropicleta-social.png",
-  telephone: "+" + site.whatsappNumber,
-  areaServed: site.coverage,
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "Carlos Condell 105",
-    addressLocality: "Tierra Amarilla",
-    addressRegion: "Atacama",
-    addressCountry: "CL",
-  },
+export const metadata: Metadata = {
+ title: { absolute: "Taller de bicicletas en Tierra Amarilla y Copiapó | Tropicleta" },
+ description: "Taller en Carlos Condell 105, Tierra Amarilla. Mantención y reparación de bicicletas, retiro y entrega en Copiapó y Paipote. Cotiza online.",
+ alternates: { canonical: siteUrl("/") },
 };
 
 export const dynamic = "force-dynamic";
@@ -32,11 +23,6 @@ export default async function HomePage() {
 
   return (
     <div className="tp-home">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
-      />
-
       {/* ================= HERO ================= */}
       <section className="tp-hero tp-home-photo-hero" aria-labelledby="tp-main-title">
         <Image className="tp-hero-background" src="/taller/equipo-tropicleta.jpeg" alt="El equipo Tropicleta junto a su furgón en Atacama" fill sizes="100vw" preload />
@@ -136,10 +122,9 @@ export default async function HomePage() {
         <div className="tp-shell">
           <div className="tp-local-box">
             <span className="tp-kicker">Taller local</span>
-            <h2 className="tp-display tp-section-title">Tu bici, en buenas manos</h2>
+            <h2 className="tp-display tp-section-title">Taller en Tierra Amarilla, cerca de Copiapó</h2>
             <p className="tp-section-intro">
-              Atendemos con coordinación previa desde Tierra Amarilla y contamos con retiro y entrega en sectores
-              definidos de Tierra Amarilla, Paipote y Copiapó.
+              Visítanos en Carlos Condell 105, Tierra Amarilla, con coordinación previa. Si estás en Copiapó o Paipote, puedes solicitar retiro y entrega al armar tu cotización. El transporte se coordina según disponibilidad.
             </p>
             <ul className="tp-local-list">
               <li className="tp-local-item">Diagnóstico gratuito.</li>
@@ -152,7 +137,7 @@ export default async function HomePage() {
                 Hablar con Tropicleta
               </a>
               <Link className="tp-btn tp-btn-secondary" href="/contacto/">
-                Ver contacto
+                Ver ubicación y contacto
               </Link>
             </div>
           </div>

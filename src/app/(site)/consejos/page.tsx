@@ -1,9 +1,10 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
 import { posts } from "@/data/posts";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = { alternates: { canonical: siteUrl("/consejos/") },
   title: "Consejos",
   description: "Consejos de mantención y uso de bicicletas desde el taller Tropicleta en Atacama.",
 };

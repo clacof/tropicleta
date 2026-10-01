@@ -1,9 +1,10 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import { PageHero } from "@/components/PageHero";
 import { faqs } from "@/data/faq";
 import { WA_CONSULTAR } from "@/lib/whatsapp";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = { alternates: { canonical: siteUrl("/preguntas-frecuentes/") },
   title: "Preguntas frecuentes",
   description: "Resolvemos tus dudas sobre el taller, retiro a domicilio, garantía y compras en Tropicleta.",
 };

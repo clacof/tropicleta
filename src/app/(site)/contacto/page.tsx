@@ -1,10 +1,11 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { site } from "@/data/site";
 import { WA_CONSULTAR } from "@/lib/whatsapp";
 
-export const metadata: Metadata = {
-  title: "Contacto",
+export const metadata: Metadata = { alternates: { canonical: siteUrl("/contacto/") },
+  title: "Ubicación del taller en Tierra Amarilla y contacto",
   description: "Contacta a Tropicleta, taller de bicicletas en Tierra Amarilla. WhatsApp, cobertura de retiro y entrega y formulario de contacto.",
 };
 
