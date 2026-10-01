@@ -7,7 +7,7 @@ export type PackageService = QuoteService & { kind: string; components: Componen
 export function supportsVehicle(s: PackageService, vehicle: Vehicle, doubleSuspension = false) {
   return s.vehicles.includes(vehicle) && (!s.requiresDoubleSuspension || (vehicle === "scooter" || doubleSuspension)) && (!doubleSuspension || !s.excludesDoubleSuspension);
 }
-export type Selection = { manual: string[]; packages: string[]; excluded: string[] };
+export type Selection = { manual: string[]; packages: string[]; excluded: string[]; quantities?: Record<string,number> };
 export const emptySelection: Selection = { manual: [], packages: [], excluded: [] };
 
 export function validateHierarchy(catalog: PackageService[]) {

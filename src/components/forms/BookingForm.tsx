@@ -1,12 +1,14 @@
 "use client";
 
+
+import { multiVehicleQuote,vehicleQuotesSchema,setSelectionQuantity,cleanSelectionQuantities,type VehicleQuote } from "@/lib/multi-quote";
 import { PackageSelector, type PackageCatalog } from "./PackageSelector";
-import { packageQuote, supportsVehicle, toggleSelection, selectedLeaves, emptySelection, type QuoteVehicle, type Selection, type Vehicle } from "@/lib/package-quote";
+import { supportsVehicle, toggleSelection, emptySelection, type QuoteVehicle, type Selection } from "@/lib/package-quote";
 import { formatCLP } from "@/lib/format";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { serviceQuote, pickupPrices, oneWayPrices, transportLabels, type TransportMode, type QuoteService } from "@/lib/service-quote";
 import { useActionState, useState, useEffect } from "react";
-import { selectionSchema } from "@/lib/quote-selection";
+
 import { createBooking } from "@/actions/booking";
 import { Field } from "@/components/Field";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -19,30 +21,33 @@ export function BookingForm({ catalog, vehicles, preselected, minDate }: { catal
   const [state, action] = useActionState<FormState, FormData>(createBooking, {});
   const all = catalog.flatMap(c => c.services);
   const initial = all.find(s => s.slug === preselected && vehicles.some(v=>s.vehicles.includes(v.slug)));
-  const [vehicle, setVehicle] = useState<Vehicle>(vehicles.find(v=>initial?.vehicles.includes(v.slug))?.slug ?? vehicles[0]?.slug ?? "");
-  const [doubleSuspension,setDoubleSuspension] = useState(false);
-  const [selection, setSelection] = useState<Selection>(initial ? {manual:initial.kind === "package" ? [] : [initial.slug],packages:initial.kind === "package" ? [initial.slug] : [],excluded:[]} : emptySelection);
+  const initialVehicle=vehicles.find(v=>initial?.vehicles.includes(v.slug))?.slug ?? vehicles[0]?.slug ?? "";
+  const [vehicleQuotes,setVehicleQuotes]=useState<VehicleQuote[]>([{id:"vehicle-1",vehicle:initialVehicle,details:"",selection:initial?{manual:initial.kind==="package"?[]:[initial.slug],packages:initial.kind==="package"?[initial.slug]:[],excluded:[]}:emptySelection}]);
+  const [activeId,setActiveId]=useState("vehicle-1");
+  const active=vehicleQuotes.find(v=>v.id===activeId)??vehicleQuotes[0];
+  const vehicle=active.vehicle;const selection=active.selection;const doubleSuspension=false;
+  const setVehicle=(vehicle:string)=>setVehicleQuotes(rows=>rows.map(r=>r.id===active.id?{...r,vehicle}:r));
+
+  const setSelection=(change:(selection:Selection)=>Selection)=>setVehicleQuotes(rows=>rows.map(r=>r.id===active.id?{...r,selection:cleanSelectionQuantities(all,change(r.selection))}:r));
   const [query, setQuery] = useState("");
   const [pickup, setPickup] = useState(false);
   const [commune, setCommune] = useState("");
   const [transportMode, setTransportMode] = useState<TransportMode>("both");
   const [firstService, setFirstService] = useState(false);
   const [draftReady,setDraftReady] = useState(false);
-  useEffect(()=>{try {const text=sessionStorage.getItem("tp-service-draft-v1"); if(text && !preselected) {const saved=JSON.parse(text); const candidate=selectionSchema.parse(saved.selection); if(vehicles.some(v=>v.slug===saved.vehicle) && !saved.doubleSuspension) {packageQuote(all,candidate,saved.vehicle,saved.vehicle === "bicicleta" && !!saved.doubleSuspension);setDoubleSuspension(saved.vehicle === "bicicleta" && !!saved.doubleSuspension);setVehicle(saved.vehicle);setSelection(candidate);setPickup(!!saved.pickup);setCommune(saved.commune??"");setFirstService(!!saved.firstService);if(saved.transportMode in transportLabels)setTransportMode(saved.transportMode);}}}catch{}setDraftReady(true);},[]);
-  useEffect(()=>{if(draftReady)try{sessionStorage.setItem("tp-service-draft-v1",JSON.stringify({vehicle,doubleSuspension,selection,pickup,commune,firstService,transportMode}));}catch{}},[draftReady,vehicle,doubleSuspension,selection,pickup,commune,firstService,transportMode]);
-  let calculation; let selectionError = "";
-  try { calculation = packageQuote(all, selection, vehicle, doubleSuspension); } catch(e) { selectionError = e instanceof Error ? e.message : "No se puede cotizar esta selección."; }
-  const chosen = calculation?.lines ?? [];
-  const quote = serviceQuote(chosen, pickup, commune, transportMode, firstService);
-  const toggle = (slug:string) => setSelection(prev => toggleSelection(all,prev,slug));
-  const priceLabel = (s: QuoteService) => s.price === null ? "A cotizar" : (s.priceFrom ? "Desde " : "") + formatCLP(s.price);
-  const vehicleLabel = vehicles.find(v=>v.slug===vehicle)?.name ?? "Selecciona un vehículo";
-  const message = ["Hola Tropicleta, quiero solicitar esta cotización:", "Vehículo: " + vehicleLabel, ...chosen.flatMap(s => [s.name + ": " + priceLabel(s), ...s.included.map(slug=>"  Incluido: " + all.find(s=>s.slug===slug)!.name)]),
-    "Subtotal de servicios: " + formatCLP(quote.subtotal),
-    ...(firstService ? ["Primer servicio: descuento 10% en servicios · -" + formatCLP(quote.discount)] : []),
-    ...(pickup ? [transportLabels[transportMode] + ": " + (commune || "zona por definir") + " · " + (quote.transport === null ? "A cotizar" : formatCLP(quote.transport))] : []),
-    "Total estimado: " + formatCLP(quote.total), ...(quote.pending ? ["Hay valores pendientes de cotizar."] : []),
-    "Sujeto a diagnóstico y confirmación del taller."].join("\n");
+  useEffect(()=>{try{const text=sessionStorage.getItem("tp-service-draft-v2");if(text&&!preselected){const saved=JSON.parse(text);const rows=vehicleQuotesSchema.parse(saved.vehicles);multiVehicleQuote(all,rows,vehicles);setVehicleQuotes(rows);setActiveId(rows[0].id);setPickup(!!saved.pickup);setCommune(saved.commune??"");setFirstService(!!saved.firstService);if(saved.transportMode in transportLabels)setTransportMode(saved.transportMode);}}catch{}setDraftReady(true);},[]);
+  useEffect(()=>{if(draftReady)try{sessionStorage.setItem("tp-service-draft-v2",JSON.stringify({vehicles:vehicleQuotes,pickup,commune,firstService,transportMode}));}catch{}},[draftReady,vehicleQuotes,pickup,commune,firstService,transportMode]);
+  let selectionError="";let groups:ReturnType<typeof multiVehicleQuote>=[];
+  try{groups=multiVehicleQuote(all,vehicleQuotes,vehicles);}catch(e){selectionError=e instanceof Error?e.message:"No se puede cotizar esta selección.";}
+  const calculation=groups.find(g=>g.id===active.id)?.calculation;
+  const chosen=groups.flatMap(g=>g.calculation.lines);
+  const quote=serviceQuote(chosen,pickup,commune,transportMode,firstService);
+  const toggle=(slug:string)=>setSelection(prev=>toggleSelection(all,prev,slug));
+  const changeQuantity=(slug:string,quantity:number)=>setSelection(prev=>setSelectionQuantity(all,prev,slug,quantity));
+  const priceLabel=(s:QuoteService)=>s.price===null?"A cotizar":(s.priceFrom?"Desde ":"")+formatCLP(s.price);
+  const vehicleLabel=vehicles.find(v=>v.slug===vehicle)?.name??"Selecciona un vehículo";
+  const message=["Hola Tropicleta, quiero solicitar esta cotización:",...groups.flatMap(g=>[g.label+(g.details?" · "+g.details:""),...g.calculation.lines.flatMap(s=>[s.name+" ×"+s.quantity+": "+(s.price===null?"A cotizar":(s.priceFrom?"Desde ":"")+formatCLP(s.price*s.quantity)),...s.included.map(slug=>"  Incluido: "+all.find(s=>s.slug===slug)!.name+" ×"+s.includedQuantities[slug])]),"Subtotal del vehículo: "+formatCLP(serviceQuote(g.calculation.lines).subtotal)]),"Subtotal de servicios: "+formatCLP(quote.subtotal),...(firstService?["Primer servicio: descuento 10% en servicios · -"+formatCLP(quote.discount)]:[]),...(pickup?[transportLabels[transportMode]+": "+(commune||"zona por definir")+" · "+(quote.transport===null?"A cotizar":formatCLP(quote.transport))]:[]),"Total estimado: "+formatCLP(quote.total),...(quote.pending?["Hay valores pendientes de cotizar."]:[]),"Sujeto a diagnóstico y confirmación del taller."].join("\n");
+  const incomplete=groups.some(g=>!g.calculation.leaves.length);
   const val = (k: string) => (typeof state.values?.[k] === "string" ? (state.values[k] as string) : undefined);
   const err = (k: string) =>
     state.errors?.[k] && (
@@ -60,14 +65,16 @@ export function BookingForm({ catalog, vehicles, preselected, minDate }: { catal
         </div>
       )}
 
-      <PackageSelector vehicles={vehicles} catalog={catalog} selection={selection} vehicle={vehicle} doubleSuspension={doubleSuspension} query={query} covered={chosen.flatMap(s=>s.included)} onQuery={setQuery} onToggle={toggle} onVehicle={(v,isDouble)=>{setVehicle(v);setDoubleSuspension(isDouble);setSelection(prev=>({manual:prev.manual.filter(slug=>!!all.find(s=>s.slug===slug) && supportsVehicle(all.find(s=>s.slug===slug)!,v,isDouble)),packages:prev.packages.filter(slug=>{const service=all.find(s=>s.slug===slug);return !!service && supportsVehicle(service,v,isDouble);}),excluded:prev.excluded.filter(slug=>!!all.find(s=>s.slug===slug) && supportsVehicle(all.find(s=>s.slug===slug)!,v,isDouble))}));}} />
+      <section className="tp-vehicle-picker" aria-label="Vehículos de la cotización"><div className="tp-vehicle-tabs">{vehicleQuotes.map((row,i)=><button key={row.id} type="button" className={"tp-btn tp-btn-sm "+(row.id===active.id?"tp-btn-primary":"tp-btn-secondary")} aria-pressed={row.id===active.id} onClick={()=>setActiveId(row.id)}>{vehicles.find(v=>v.slug===row.vehicle)?.name??"Vehículo"} {i+1}</button>)}</div><div className="tp-vehicle-actions"><button type="button" className="tp-btn tp-btn-secondary tp-btn-sm" disabled={vehicleQuotes.length>=10||!vehicles.length} onClick={()=>{const id=crypto.randomUUID();setVehicleQuotes(rows=>[...rows,{id,vehicle:vehicles[0]?.slug??"",details:"",selection:emptySelection}]);setActiveId(id);setQuery("");}}>+ Añadir otro vehículo</button>{vehicleQuotes.length>1&&<button type="button" className="tp-btn tp-btn-ghost tp-btn-sm" onClick={()=>{const rows=vehicleQuotes.filter(r=>r.id!==active.id);setVehicleQuotes(rows);setActiveId(rows[0].id);}}>Quitar este vehículo</button>}</div><p className="tp-hint">Elige servicios y cantidades para cada vehículo. Los packs se calculan por separado para cada uno.</p></section>
+      <PackageSelector onQuantity={changeQuantity} vehicles={vehicles} catalog={catalog} selection={selection} vehicle={vehicle} doubleSuspension={doubleSuspension} query={query} covered={calculation?.lines.flatMap(s=>s.included)??[]} onQuery={setQuery} onToggle={toggle} onVehicle={(v,isDouble)=>{setVehicle(v);setSelection(prev=>({quantities:prev.quantities,manual:prev.manual.filter(slug=>!!all.find(s=>s.slug===slug) && supportsVehicle(all.find(s=>s.slug===slug)!,v,isDouble)),packages:prev.packages.filter(slug=>{const service=all.find(s=>s.slug===slug);return !!service && supportsVehicle(service,v,isDouble);}),excluded:prev.excluded.filter(slug=>!!all.find(s=>s.slug===slug) && supportsVehicle(all.find(s=>s.slug===slug)!,v,isDouble))}));}} />
+      <input type="hidden" name="vehicleQuotes" value={JSON.stringify(vehicleQuotes)}/>
       <input type="hidden" name="selection" value={JSON.stringify(selection)} />
-      {selectedLeaves(all,selection).map(slug=><input key={slug} type="hidden" name="services" value={slug} />)}
+      {[...new Set(groups.flatMap(g=>g.calculation.leaves))].map(slug=><input key={slug} type="hidden" name="services" value={slug} />)}
       {selectionError && <p className="tp-alert" role="alert">{selectionError}</p>}
       {err("services")}
       <fieldset className="tp-fieldset">
         <legend className="tp-label">2. Tu vehículo, bicicleta o scooter</legend>
-        <Field name="vehicleDetails" label="Marca, modelo o detalle" state={state} optional placeholder="Ej: MTB aro 29, frenos hidráulicos" />
+        <label className="tp-field">Marca, modelo o detalle de {vehicleLabel}<input className="tp-input" name="vehicleDetails" maxLength={200} value={active.details} onChange={e=>setVehicleQuotes(rows=>rows.map(r=>r.id===active.id?{...r,details:e.target.value}:r))} placeholder="Ej: MTB aro 29, frenos hidráulicos"/></label>
       </fieldset>
 
       <fieldset className="tp-fieldset">
@@ -138,13 +145,13 @@ export function BookingForm({ catalog, vehicles, preselected, minDate }: { catal
       <input type="text" name="website" tabIndex={-1} autoComplete="off" hidden aria-hidden="true" />
 
       <div>
-        <SubmitButton disabled={!vehicles.some(v=>v.slug===vehicle) || !!selectionError || !chosen.length} pendingText="Enviando solicitud…">Enviar cotización y solicitar hora</SubmitButton>
+        <SubmitButton disabled={!vehicles.some(v=>v.slug===vehicle) || !!selectionError || !chosen.length || incomplete} pendingText="Enviando solicitud…">Enviar cotización y solicitar hora</SubmitButton>
       </div>
       </div>
       <aside className="tp-local-box tp-quote-summary" aria-label="Tu cotización">
-        <h2>Tu cotización</h2><p className="tp-hint">{vehicleLabel}</p>
+        <h2>Tu cotización</h2><p className="tp-hint">{vehicleQuotes.length} {vehicleQuotes.length===1?"vehículo":"vehículos"}</p>
         <label className="tp-option"><input type="checkbox" name="firstService" checked={firstService} onChange={e => setFirstService(e.target.checked)} /><span>Es mi primer servicio en Tropicleta<small>10% de descuento en el total de servicios. No incluye retiro, entrega ni repuestos.</small></span></label>
-        {chosen.length === 0 ? <p>Selecciona servicios para ver el desglose y el total.</p> : <ul className="tp-quote-items">{chosen.map(s => <li key={s.slug}><span>{s.name}<small>{priceLabel(s)}{s.automatic ? " · Paquete reconocido" : ""}</small>{s.included.map(slug=><small key={slug}>✓ {all.find(s=>s.slug===slug)!.name} · Incluido</small>)}</span>{!s.automatic && <button type="button" className="tp-btn tp-btn-secondary tp-btn-sm" onClick={() => setSelection(prev=>s.kind === "package" ? (prev.packages.includes(s.slug) ? {...prev,packages:prev.packages.filter(p=>p!==s.slug)} : {...prev,manual:prev.manual.filter(slug=>!s.included.includes(slug)),excluded:[...new Set([...prev.excluded,...s.included])]}) : toggleSelection(all,prev,s.slug))} aria-label={"Quitar " + s.name}>Quitar</button>}</li>)}</ul>}
+        {groups.map(g=><section key={g.id} className="tp-vehicle-summary"><h3>{g.label}</h3>{g.details&&<p className="tp-hint">{g.details}</p>}{!g.calculation.lines.length?<p className="tp-hint">Selecciona servicios para este vehículo.</p>:<ul className="tp-quote-items">{g.calculation.lines.map(s=><li key={s.slug}><span>{s.name} ×{s.quantity}<small>{priceLabel(s)} por unidad · {s.price===null?"A cotizar":formatCLP(s.price*s.quantity)}{s.automatic?" · Pack reconocido":""}</small>{s.included.map(slug=><small key={slug}>✓ {all.find(c=>c.slug===slug)!.name} ×{s.includedQuantities[slug]} · Incluido</small>)}</span><button type="button" className="tp-btn tp-btn-ghost tp-btn-sm" onClick={()=>{setActiveId(g.id);setVehicleQuotes(rows=>rows.map(r=>r.id===g.id?{...r,selection:cleanSelectionQuantities(all,s.automatic?{...r.selection,manual:r.selection.manual.filter(slug=>!s.included.includes(slug)),excluded:[...new Set([...r.selection.excluded,...s.included])]}:setSelectionQuantity(all,r.selection,s.slug,0))}:r));}} aria-label={"Quitar "+s.name+" de "+g.label}>Quitar</button></li>)}</ul>}<p className="tp-hint">Subtotal: <strong>{formatCLP(serviceQuote(g.calculation.lines).subtotal)}</strong></p></section>)}
         <dl className="tp-dl">
           <div><dt>Servicios</dt><dd>{formatCLP(quote.subtotal)}</dd></div>
           {firstService && <div><dt>Primer servicio −10%</dt><dd>−{formatCLP(quote.discount)}</dd></div>}
@@ -153,7 +160,7 @@ export function BookingForm({ catalog, vehicles, preselected, minDate }: { catal
         </dl>
         {quote.pending && <p>Hay servicios o transporte pendientes de cotizar; no están incluidos en la suma.</p>}
         <p className="tp-hint">El taller confirma el valor final tras el diagnóstico gratuito. Repuestos y trabajos adicionales se cotizan aparte. Revisaremos si los servicios elegidos incluyen trabajos en común.</p>
-        {chosen.length > 0 && !selectionError && <a className="tp-btn tp-btn-primary" href={whatsappUrl(message)} target="_blank" rel="noopener noreferrer">Enviar cotización por WhatsApp</a>}
+        {chosen.length > 0 && !selectionError && !incomplete && <a className="tp-btn tp-btn-primary" href={whatsappUrl(message)} target="_blank" rel="noopener noreferrer">Enviar cotización por WhatsApp</a>}
         <p className="tp-hint">También puedes completar tus datos y fecha preferida para registrar la solicitud.</p>
       </aside>
     </form>

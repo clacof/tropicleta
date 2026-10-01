@@ -229,7 +229,7 @@
 
 .tp-quote-heading { font-size:22px; line-height:1.2; margin:16px 0 12px; }
 .tp-package-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-.tp-package-option { align-items:flex-start; border:1px solid #ffffff25; padding:16px; }
+.tp-package-option { align-items:flex-start; border:1px solid #ffffff25; border-radius:12px; padding:16px; }
 .tp-package-option.is-selected { border-color:#ffad32; background:#ffad3210; }
 .tp-package-option strong, .tp-package-option b { display:block; }
 .tp-package-option b { color:#ffad32; margin-block:7px; font-size:21px; }
@@ -266,3 +266,14 @@
 .tp-admin-nav-group > div { margin: 2px 0 6px 12px; padding-left: 6px; border-left: 1px solid var(--tp-border); }
 .tp-admin-side { padding: 14px; }
 @media (min-width: 900px) { .tp-admin { grid-template-columns: 215px 1fr; } .tp-admin-side { overflow-y: auto; } }
+
+.tp-service-option { border: 1px solid var(--tp-border); border-radius: 12px; padding: 8px; }
+.tp-service-option .tp-option { border: 0; padding: 4px; }
+.tp-service-quantity { display: flex; align-items: center; gap: 10px; margin: 8px 0 0; }
+.tp-service-quantity button { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--tp-border); background: var(--tp-black-2); color: var(--tp-white); cursor: pointer; font-size: 20px; }
+.tp-service-quantity button:disabled { opacity: .35; cursor: default; }
+.tp-service-quantity output { min-width: 24px; text-align: center; font-weight: 800; }
+.tp-vehicle-picker { margin-bottom: 22px; }
+.tp-vehicle-tabs, .tp-vehicle-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.tp-vehicle-summary { padding: 12px 0; border-bottom: 1px solid var(--tp-border); }
+.tp-vehicle-summary h3 { font-size: 16px; margin: 0 0 8px; }

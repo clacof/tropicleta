@@ -54,11 +54,12 @@ export const bookingSchema = z
     vehicleType: z.string().trim().min(1, "Elige el tipo de vehículo").max(20),
     doubleSuspension: z.string().optional().transform(v => v === "on"),
     selection: z.string().max(12000).optional(),
+    vehicleQuotes: z.string().max(80000).optional(),
     vehicleDetails: z.string().trim().max(200).optional(),
     services: z
       .union([z.string(), z.array(z.string())], { error: "Elige al menos un servicio" })
       .transform((v) => (Array.isArray(v) ? v : [v]))
-      .pipe(z.array(z.string().min(1)).min(1, "Elige al menos un servicio").max(40)),
+      .pipe(z.array(z.string().min(1)).min(1, "Elige al menos un servicio").max(400)),
     preferredDate: z
       .string({ error: "Elige una fecha" })
       .pipe(z.iso.date("Elige una fecha válida"))
