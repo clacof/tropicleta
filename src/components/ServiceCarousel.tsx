@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 const slides = [
   { number: 1, title: "Servicios generales", href: "/servicios/#mantenciones" },
   { number: 4, title: "Retiro y entrega", href: "/servicios/" },
-  { number: 8, title: "Scooters eléctricos", href: "/servicios/#scooters" },
+  { number: 8, title: "Scooters eléctricos", href: "/servicios/?vehiculo=scooter#scooters" },
   { number: 2, title: "Ruedas y tubeless", href: "/servicios/#ruedas" },
   { number: 3, title: "Suspensiones", href: "/servicios/#suspensiones" },
   { number: 5, title: "Ejes y rodamientos", href: "/servicios/#ejes" },

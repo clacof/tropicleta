@@ -41,7 +41,7 @@ async function main() {
     await assert.rejects(db.insert(schema.productCategories).values({ name: "B", slug: "a" }), (e) => isUniqueViolation(e));
 
     // Categoría de servicio con servicios: ON DELETE RESTRICT
-    const [sc] = await db.insert(schema.serviceCategories).values({ name: "Frenos", slug: "frenos" }).returning();
+    const [sc] = await db.insert(schema.serviceCategories).values({ name: "Categoría de prueba", slug: "qa-frenos" }).returning();
     await db.insert(schema.services).values({ name: "Purga", slug: "purga", categoryId: sc.id });
     await assert.rejects(db.delete(schema.serviceCategories), (e) => isForeignKeyViolation(e));
 

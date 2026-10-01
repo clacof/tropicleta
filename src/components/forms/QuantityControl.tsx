@@ -1,3 +1,0 @@
-export function QuantityControl({name,quantity,onChange,disabled=false}:{name:string;quantity:number;onChange:(quantity:number)=>void;disabled?:boolean}){
-  return <div className="tp-service-quantity" aria-label={`Cantidad de ${name}`}><button type="button" aria-label={`Reducir cantidad de ${name}`} disabled={disabled||quantity===0} onClick={()=>onChange(quantity-1)}>−</button><output aria-live="polite" aria-label={`Cantidad de ${name}`}>{quantity}</output><button type="button" aria-label={`Aumentar cantidad de ${name}`} disabled={disabled||quantity>=20} onClick={()=>onChange(quantity+1)}>+</button></div>;
-}

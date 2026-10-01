@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
@@ -52,6 +53,19 @@ async function main() {
     assert.equal(product.stock, 7);
     assert.equal(product.price, 8900);
     assert.equal(product.active, true);
+    await db.update(schema.services).set({slug:"camara-scooter-editada",name:"Cambio de cámara de scooter"}).where(eq(schema.services.slug,"pinchazo-scooter"));
+    await completeCatalog(db as unknown as DB);
+    assert.equal((await db.select().from(schema.services).where(eq(schema.services.slug,"pinchazo-scooter"))).length,0,"No recrear la URL ni el nombre antiguo tras editar el servicio");
+    const [renamed]=await db.select().from(schema.services).where(eq(schema.services.slug,"camara-scooter-editada"));
+    assert.equal(renamed.name,"Cambio de cámara de scooter");
+    const [frontWheel]=await db.select().from(schema.services).where(eq(schema.services.slug,"armado-de-rueda"));
+    await db.update(schema.services).set({price:23456}).where(eq(schema.services.id,frontWheel.id));
+    await db.delete(schema.services).where(eq(schema.services.slug,"armado-rueda-trasera"));
+    await client.exec(await readFile("drizzle/0015_wheel_specific_services.sql","utf8"));
+    const [rearWheel]=await db.select().from(schema.services).where(eq(schema.services.slug,"armado-rueda-trasera"));
+    assert.equal(rearWheel.price,23456,"La opción trasera copia el precio individual vigente");
+    assert.equal((await db.select().from(schema.services).where(eq(schema.services.id,frontWheel.id)))[0].price,23456);
+    assert.equal(rearWheel.name,"Armado de rueda trasera");
     assert.equal(matchesSearch("SUSPENSION", "Suspensión de bicicleta"), true);
     assert.equal(matchesSearch("cadena seco", "Lubricante seco para cadena"), true);
     assert.equal(matchesSearch("luces", "Cadena"), false);

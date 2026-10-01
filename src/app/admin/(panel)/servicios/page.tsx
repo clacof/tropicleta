@@ -10,7 +10,7 @@ import { formatCLP } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Servicios" };
 
-export default async function ServiciosAdmin({searchParams}:{searchParams:Promise<{quitados?:string}>}) {
+export default async function ServiciosAdmin({searchParams}:{searchParams:Promise<{quitados?:string;guardado?:string}>}) {
   await requireAdmin();
   const rows = await db
     .select({ s: schema.services, c: schema.serviceCategories })
@@ -18,7 +18,8 @@ export default async function ServiciosAdmin({searchParams}:{searchParams:Promis
     .innerJoin(schema.serviceCategories, eq(schema.services.categoryId, schema.serviceCategories.id))
     .orderBy(asc(schema.serviceCategories.sort), asc(schema.services.sort));
 
-  const showRemoved = (await searchParams).quitados === "1";
+  const params=await searchParams;
+  const showRemoved = params.quitados === "1";
   return (
     <>
       <div className="tp-admin-title">
@@ -27,6 +28,7 @@ export default async function ServiciosAdmin({searchParams}:{searchParams:Promis
           Nuevo servicio
         </Link>
       </div>
+      {params.guardado==="1"&&<p className="tp-alert" role="status">Servicio guardado. El listado ya muestra los nombres y precios actualizados.</p>}
       <Link className="tp-btn tp-btn-ghost tp-btn-sm" href={showRemoved?"/admin/servicios/":"/admin/servicios/?quitados=1"}>{showRemoved?"Volver al catálogo":"Ver quitados / recuperar"}</Link>
       <section className="tp-panel"><h2>Vehículos</h2><p className="tp-hint">Añade o quita vehículos y configura sus servicios y packs.</p><Link className="tp-btn tp-btn-secondary tp-btn-sm" href="/admin/servicios/vehiculos/">Configurar vehículos</Link></section>
       <PacksAdminPanel catalog={rows.map(({s})=>s)} showRemoved={showRemoved} />
@@ -56,7 +58,7 @@ export default async function ServiciosAdmin({searchParams}:{searchParams:Promis
                   )}
                 </td>
                 <td>{c.name}</td>
-                <td className="num">{s.price ? `${s.priceFrom ? "desde " : ""}${formatCLP(s.price)}` : "A cotizar"}</td>
+                <td className="num">{s.price!==null ? `${s.priceFrom ? "desde " : ""}${formatCLP(s.price)}` : "A cotizar"}</td>
                 <td>{s.removed?"Quitado":s.active ? "Activo" : "Oculto"}</td>
                 <td className="num">
                     <form action={s.removed?restoreService:removeService}>

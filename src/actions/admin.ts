@@ -3,6 +3,7 @@ import { validateHierarchy } from "@/lib/package-quote";
 
 import { and, count, eq, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { renameServiceReferences } from "@/lib/service-edit";
 import { redirect } from "next/navigation";
 import { revalidatePublicData } from "@/lib/revalidate";
 import { z } from "zod";
@@ -271,7 +272,13 @@ export async function saveService(_prev: FormState, fd: FormData): Promise<FormS
       if (current?.removed) throw Error("Recupera este servicio antes de editarlo.");
 
       const candidate = { ...current, ...data };
-      validateHierarchy([...rows.filter(s => s.id !== d.id), candidate]);
+      const updatedRows=current?renameServiceReferences(rows,current.slug,data.slug):rows;
+      validateHierarchy([...updatedRows.filter(s => s.id !== d.id), candidate]);
+      if(current && current.slug!==data.slug){
+        for(const parent of updatedRows.filter(s=>s.id!==d.id&&rows.find(old=>old.id===s.id)!.components.some(c=>c.slug===current.slug))){
+          await tx.update(schema.services).set({components:parent.components}).where(eq(schema.services.id,parent.id));
+        }
+      }
       if (d.id) await tx.update(schema.services).set(data).where(eq(schema.services.id, d.id));
       else await tx.insert(schema.services).values(data);
     });
@@ -281,7 +288,8 @@ export async function saveService(_prev: FormState, fd: FormData): Promise<FormS
   }
   await audit(d.id ? "editar" : "crear", "servicio", d.id ?? null, data.name);
   revalidatePublicData();
-  redirect("/admin/servicios/");
+  revalidatePath("/admin/servicios", "layout");
+  redirect("/admin/servicios/?guardado=1");
 }
 
 export async function hideService(fd: FormData) {

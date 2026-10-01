@@ -23,7 +23,10 @@ export async function completeCatalog(db: DB) {
       description: "El alcance del trabajo, los repuestos y el plazo se confirman al revisar tu bicicleta o scooter. Solicita un diagnóstico antes de coordinar el servicio.",
       active: true,
     }));
-    const addedServices = await tx.insert(schema.services).values(services).onConflictDoNothing().returning({ id: schema.services.id });
+    // Migrations maintain the initial service catalog. Do not recreate an old URL
+    // after its service was renamed in Admin (which would duplicate the service).
+    const existingServices=await tx.select({id:schema.services.id}).from(schema.services).limit(1);
+    const addedServices = existingServices.length?[]:await tx.insert(schema.services).values(services).onConflictDoNothing().returning({ id: schema.services.id });
     // Completa las fichas iniciales vacías sin modificar contenido ya escrito.
     for (const service of services) {
       await tx.update(schema.services).set({

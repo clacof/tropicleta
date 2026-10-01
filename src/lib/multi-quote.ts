@@ -13,7 +13,7 @@ export function selectionQuantities(catalog:PackageService[],selection:Selection
   return counts;
 }
 export function setSelectionQuantity(catalog:PackageService[],selection:Selection,slug:string,quantity:number):Selection{
-  if(!Number.isInteger(quantity)||quantity<0||quantity>20)return selection;
+  if(!Number.isInteger(quantity)||quantity<0||quantity>1)return selection;
   const service=catalog.find(s=>s.slug===slug);if(!service)return selection;
   const selected=service.kind==="package"?selection.packages.includes(slug):selectedLeaves(catalog,selection).includes(slug);
   let next=selection;

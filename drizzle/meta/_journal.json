@@ -92,6 +92,20 @@
       "when": 1790828313581,
       "tag": "0013_unknown_pepper_potts",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790880000000,
+      "tag": "0014_scooter_service_name",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1790880001000,
+      "tag": "0015_wheel_specific_services",
+      "breakpoints": true
     }
   ]
 }
