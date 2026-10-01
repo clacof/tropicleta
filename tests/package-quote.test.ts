@@ -84,6 +84,10 @@ async function persistence() {
     assert.ok(configured.every(s=>!s.active));
     const basicPack=rows.find(s=>s.slug==="mantencion-basica")!;
     assert.deepEqual(packageReference(rows,basicPack),{reference:47000,savings:12000});
+    const withDelivery={...basicPack,active:true,components:[...basicPack.components,{slug:"retiro-y-entrega",required:true}]};
+    const deliveryCatalog=rows.map(s=>s.id===basicPack.id?withDelivery:s).filter(s=>s.active);
+    assert.deepEqual(packageReference(deliveryCatalog,withDelivery),{reference:50000,savings:15000,estimated:true});
+    assert.equal(serviceQuote(packageQuote(deliveryCatalog,{manual:[],packages:[withDelivery.slug],excluded:[]},"bicicleta").lines).total,35000);
     assert.deepEqual(packageReference(rows,rows.find(s=>s.slug==="mantencion-completa")!),{reference:83000,savings:33000});
     assert.equal(rows.find(s=>s.slug==="ajuste-frenos-mecanicos")!.price,7000);
     assert.equal(rows.find(s=>s.slug==="purga-frenos-hidraulicos")!.price,15000);
