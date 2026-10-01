@@ -11,6 +11,16 @@ const individual=(slug:string,price:number|null=10000):PackageService=>({slug,na
 const pack=(slug:string,price:number,children:string[]):PackageService=>({...individual(slug,price),kind:"package",components:children.map(slug=>({slug,required:true}))});
 // Fixture artificial: no establece la composición de los paquetes reales del taller.
 const catalog=[individual("a"),individual("b"),individual("c",20000),individual("extra",15000),pack("basic",15000,["a","b"]),pack("complete",30000,["basic","c"])];
+const bikeOnly={...individual("bike-only"),excludesDoubleSuspension:true};
+const bikeChoice={manual:["bike-only"],packages:[],excluded:[]};
+assert.deepEqual(packageQuote([bikeOnly],bikeChoice,"bicicleta").leaves,["bike-only"]);
+assert.throws(()=>packageQuote([bikeOnly],bikeChoice,"bicicleta",true),/vehículo/);
+assert.throws(()=>validateHierarchy([bikeOnly,pack("incompatible-double",1000,["bike-only"])]),/doble suspensión/);
+const mixedDouble={...individual("mixed-double"),vehicles:["bicicleta","scooter"] as const,requiresDoubleSuspension:true};
+const mixedCatalog=[{...mixedDouble,vehicles:[...mixedDouble.vehicles]}];
+assert.doesNotThrow(()=>packageQuote(mixedCatalog,{manual:["mixed-double"],packages:[],excluded:[]},"scooter"));
+assert.doesNotThrow(()=>packageQuote(mixedCatalog,{manual:["mixed-double"],packages:[],excluded:[]},"bicicleta",true));
+assert.throws(()=>packageQuote(mixedCatalog,{manual:["mixed-double"],packages:[],excluded:[]},"bicicleta"),/vehículo/);
 const quote=(selection:Selection,rows=catalog)=>packageQuote(rows,selection,"bicicleta");
 const total=(selection:Selection,rows=catalog)=>serviceQuote(quote(selection,rows).lines).total;
 let basic=toggleSelection(catalog,emptySelection,"basic");

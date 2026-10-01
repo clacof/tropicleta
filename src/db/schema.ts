@@ -59,6 +59,7 @@ export const services = pgTable("services", {
   vehicles: jsonb("vehicles").$type<import("../lib/package-quote").Vehicle[]>().notNull().default(["bicicleta", "electrica"]),
   individuallySelectable: boolean("individually_selectable").notNull().default(true),
   requiresDoubleSuspension: boolean("requires_double_suspension").notNull().default(false),
+  excludesDoubleSuspension: boolean("excludes_double_suspension").notNull().default(false),
   removed: boolean("removed").notNull().default(false),
   featured: boolean("featured").notNull().default(false),
   active: boolean("active").notNull().default(true),

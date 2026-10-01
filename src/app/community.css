@@ -256,3 +256,13 @@
 
 .tp-inline-confirm{max-width:280px;white-space:normal;text-align:left;padding:10px;border:1px solid #ffad3240;border-radius:8px}
 .tp-inline-confirm p{font-size:12px;margin:0 0 8px}.tp-inline-confirm button+button{margin-left:12px}
+
+/* Menú compacto del administrador */
+.tp-admin-side nav { flex-direction: column; flex-wrap: nowrap; gap: 3px; }
+.tp-admin-side nav a { display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 13px; border-radius: 8px; }
+.tp-admin-nav-group summary { cursor: pointer; padding: 8px 10px; font-size: 14px; font-weight: 800; color: var(--tp-white); border-radius: 8px; }
+.tp-admin-nav-group summary:hover { background: rgba(255,255,255,.06); }
+.tp-admin-nav-group summary .tp-badge { margin-left: 8px; }
+.tp-admin-nav-group > div { margin: 2px 0 6px 12px; padding-left: 6px; border-left: 1px solid var(--tp-border); }
+.tp-admin-side { padding: 14px; }
+@media (min-width: 900px) { .tp-admin { grid-template-columns: 215px 1fr; } .tp-admin-side { overflow-y: auto; } }

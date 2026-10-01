@@ -1,0 +1,1 @@
+ALTER TABLE "services" ADD COLUMN "excludes_double_suspension" boolean DEFAULT false NOT NULL;

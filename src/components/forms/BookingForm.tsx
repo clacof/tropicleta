@@ -1,7 +1,7 @@
 "use client";
 
 import { PackageSelector, type PackageCatalog } from "./PackageSelector";
-import { packageQuote, toggleSelection, selectedLeaves, emptySelection, type Selection, type Vehicle } from "@/lib/package-quote";
+import { packageQuote, supportsVehicle, toggleSelection, selectedLeaves, emptySelection, type Selection, type Vehicle } from "@/lib/package-quote";
 import { formatCLP } from "@/lib/format";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { serviceQuote, pickupPrices, oneWayPrices, transportLabels, type TransportMode, type QuoteService } from "@/lib/service-quote";
@@ -60,7 +60,7 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
         </div>
       )}
 
-      <PackageSelector catalog={catalog} selection={selection} vehicle={vehicle} doubleSuspension={doubleSuspension} query={query} covered={chosen.flatMap(s=>s.included)} onQuery={setQuery} onToggle={toggle} onVehicle={(v,isDouble)=>{setVehicle(v);setDoubleSuspension(isDouble);setSelection(prev=>({manual:prev.manual.filter(slug=>all.find(s=>s.slug===slug)?.vehicles.includes(v)),packages:prev.packages.filter(slug=>{const service=all.find(s=>s.slug===slug);return service?.vehicles.includes(v) && (!service.requiresDoubleSuspension || isDouble);}),excluded:prev.excluded.filter(slug=>all.find(s=>s.slug===slug)?.vehicles.includes(v))}));}} />
+      <PackageSelector catalog={catalog} selection={selection} vehicle={vehicle} doubleSuspension={doubleSuspension} query={query} covered={chosen.flatMap(s=>s.included)} onQuery={setQuery} onToggle={toggle} onVehicle={(v,isDouble)=>{setVehicle(v);setDoubleSuspension(isDouble);setSelection(prev=>({manual:prev.manual.filter(slug=>!!all.find(s=>s.slug===slug) && supportsVehicle(all.find(s=>s.slug===slug)!,v,isDouble)),packages:prev.packages.filter(slug=>{const service=all.find(s=>s.slug===slug);return !!service && supportsVehicle(service,v,isDouble);}),excluded:prev.excluded.filter(slug=>!!all.find(s=>s.slug===slug) && supportsVehicle(all.find(s=>s.slug===slug)!,v,isDouble))}));}} />
       <input type="hidden" name="selection" value={JSON.stringify(selection)} />
       {selectedLeaves(all,selection).map(slug=><input key={slug} type="hidden" name="services" value={slug} />)}
       {selectionError && <p className="tp-alert" role="alert">{selectionError}</p>}

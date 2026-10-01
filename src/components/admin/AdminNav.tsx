@@ -1,34 +1,20 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const links = [
-  { href: "/admin/", label: "Resumen", exact: true },
-  { href: "/admin/contabilidad/", label: "Contabilidad" },
-  { href: "/admin/reservas/", label: "Reservas" },
-  { href: "/admin/ordenes/", label: "Órdenes" },
-  { href: "/admin/mensajes/", label: "Mensajes" },
-  { href: "/admin/servicios/", label: "Servicios" },
-  { href: "/admin/productos/", label: "Productos" },
-  { href: "/admin/categorias/", label: "Categorías" },
-  { href: "/admin/actividad/", label: "Actividad" },
+const groups = [
+  {label:"Tienda",links:[{href:"/admin/productos/",label:"Productos"},{href:"/admin/ordenes/",label:"Órdenes de productos"},{href:"/admin/productos/categorias/",label:"Categorías"}]},
+  {label:"Taller",links:[{href:"/admin/servicios/",label:"Servicios"},{href:"/admin/reservas/",label:"Reservas"},{href:"/admin/servicios/categorias/",label:"Categorías"}]},
 ];
-
-export function AdminNav({ badges }: { badges: Record<string, number> }) {
-  const raw = usePathname();
-  const pathname = raw.endsWith("/") ? raw : raw + "/";
-  return (
-    <nav aria-label="Panel">
-      {links.map((l) => {
-        const active = l.exact ? pathname === l.href : pathname.startsWith(l.href);
-        const n = badges[l.href];
-        return (
-          <Link key={l.href} href={l.href} aria-current={active ? "page" : undefined}>
-            {l.label} {n ? <span className="tp-badge tp-badge-orange" style={{ padding: "1px 7px" }}>{n}</span> : null}
-          </Link>
-        );
-      })}
-    </nav>
-  );
+const general=[{href:"/admin/",label:"Resumen"},{href:"/admin/contabilidad/",label:"Contabilidad"}];
+const other=[{href:"/admin/mensajes/",label:"Mensajes"},{href:"/admin/actividad/",label:"Actividad"}];
+export function AdminNav({badges}:{badges:Record<string,number>}) {
+  const raw=usePathname();const pathname=raw.endsWith("/")?raw:raw+"/";
+  const link=(item:{href:string;label:string},siblings:{href:string}[])=>{
+    const active=item.href==="/admin/"?pathname===item.href:pathname.startsWith(item.href)&&!siblings.some(s=>s.href!==item.href&&s.href.startsWith(item.href)&&pathname.startsWith(s.href));
+    return <Link key={item.href} href={item.href} aria-current={active?"page":undefined}>{item.label}{badges[item.href]?<span className="tp-badge tp-badge-orange">{badges[item.href]}</span>:null}</Link>;
+  };
+  return <nav aria-label="Panel">{general.map(item=>link(item,general))}{groups.map(group=>{
+    const active=group.links.some(l=>pathname.startsWith(l.href));const pending=group.links.reduce((n,l)=>n+(badges[l.href]??0),0);
+    return <details className="tp-admin-nav-group" key={`${group.label}-${active}`} open={active}><summary>{group.label}{pending>0&&<span className="tp-badge tp-badge-orange">{pending}</span>}</summary><div>{group.links.map(item=>link(item,group.links))}</div></details>;
+  })}{other.map(item=>link(item,other))}</nav>;
 }

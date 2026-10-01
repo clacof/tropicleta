@@ -30,7 +30,7 @@ export const getServiceCatalog = unstable_cache(
     ]);
     return cats.map((c) => ({ ...c, services: rows.filter((s) => s.categoryId === c.id) })).filter(c => c.services.length > 0);
   },
-  ["service-catalog-v7"],
+  ["service-catalog-v8"],
   catalogCache,
 );
 
@@ -44,7 +44,7 @@ export const getService = unstable_cache(
       .limit(1);
     return rows[0] ?? null;
   },
-  ["service-v7"],
+  ["service-v8"],
   catalogCache,
 );
 

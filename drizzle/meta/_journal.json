@@ -78,6 +78,13 @@
       "when": 1790820000000,
       "tag": "0011_accounting_areas",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790825969375,
+      "tag": "0012_magenta_richard_fisk",
+      "breakpoints": true
     }
   ]
 }

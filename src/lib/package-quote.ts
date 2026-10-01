@@ -2,7 +2,10 @@ import type { QuoteService } from "./service-quote";
 export const vehicleLabels = { bicicleta: "Bicicleta", electrica: "Bicicleta eléctrica", scooter: "Scooter" };
 export type Vehicle = keyof typeof vehicleLabels;
 export type Component = { slug: string; required: boolean };
-export type PackageService = QuoteService & { kind: string; components: Component[]; vehicles: Vehicle[]; individuallySelectable: boolean; active: boolean; removed?: boolean; requiresDoubleSuspension?: boolean };
+export type PackageService = QuoteService & { kind: string; components: Component[]; vehicles: Vehicle[]; individuallySelectable: boolean; active: boolean; removed?: boolean; requiresDoubleSuspension?: boolean; excludesDoubleSuspension?: boolean };
+export function supportsVehicle(s: PackageService, vehicle: Vehicle, doubleSuspension = false) {
+  return s.vehicles.includes(vehicle) && (!s.requiresDoubleSuspension || (vehicle === "scooter" || doubleSuspension)) && (!doubleSuspension || !s.excludesDoubleSuspension);
+}
 export type Selection = { manual: string[]; packages: string[]; excluded: string[] };
 export const emptySelection: Selection = { manual: [], packages: [], excluded: [] };
 
@@ -13,6 +16,7 @@ export function validateHierarchy(catalog: PackageService[]) {
     if (visiting.has(s.slug)) throw Error("La composición contiene una dependencia circular.");
     if (done.has(s.slug)) return;
     if (!s.vehicles.length) throw Error("Selecciona al menos un tipo de vehículo.");
+    if (s.requiresDoubleSuspension && s.excludesDoubleSuspension) throw Error("Selecciona una compatibilidad válida para la doble suspensión.");
     if (s.kind !== "package" && s.components.length) throw Error("Solo un paquete puede tener componentes.");
     if (new Set(s.components.map(c => c.slug)).size !== s.components.length) throw Error("Hay componentes duplicados.");
     visiting.add(s.slug);
@@ -20,9 +24,10 @@ export function validateHierarchy(catalog: PackageService[]) {
       const child = map.get(c.slug);
       if (!child) throw Error("Un componente ya no existe.");
       if (child.removed) throw Error("Un componente fue quitado del catálogo.");
-      if (child.requiresDoubleSuspension && !s.requiresDoubleSuspension) throw Error("El paquete debe limitarse a bicicletas de doble suspensión.");
+      if (child.requiresDoubleSuspension && !s.requiresDoubleSuspension && s.vehicles.some(v=>v!=="scooter")) throw Error("El paquete debe limitarse a bicicletas de doble suspensión.");
       if (s.active && !child.active) throw Error("Un paquete activo contiene un componente desactivado.");
       if (s.vehicles.some(v => !child.vehicles.includes(v))) throw Error("Un componente no es compatible con todos los vehículos del paquete.");
+      if (child.excludesDoubleSuspension && !s.excludesDoubleSuspension && s.vehicles.some(v => v !== "scooter")) throw Error("Un componente no está disponible para bicicletas de doble suspensión.");
       if (child.kind === "package" && !child.components.length) throw Error("Define la composición del paquete incluido antes de usarlo como componente.");
       visit(child);
     }
@@ -64,10 +69,10 @@ export function toggleSelection(catalog: PackageService[], selection: Selection,
 export function packageQuote(catalog: PackageService[], selection: Selection, vehicle: Vehicle, doubleSuspension = false) {
   validateHierarchy(catalog);
   const map = new Map(catalog.map(s => [s.slug, s]));
-  const allowed = catalog.filter(s => s.active && !s.removed && s.vehicles.includes(vehicle) && (!s.requiresDoubleSuspension || (doubleSuspension && vehicle !== "scooter")));
+  const allowed = catalog.filter(s => s.active && !s.removed && supportsVehicle(s, vehicle, doubleSuspension));
   for (const slug of [...selection.manual, ...selection.packages, ...selection.excluded]) {
     const s = map.get(slug);
-    if (!s || !s.active || s.removed || !s.vehicles.includes(vehicle) || (s.requiresDoubleSuspension && (!doubleSuspension || vehicle === "scooter"))) throw Error("La selección contiene un servicio no disponible para este vehículo.");
+    if (!s || !s.active || s.removed || !supportsVehicle(s, vehicle, doubleSuspension)) throw Error("La selección contiene un servicio no disponible para este vehículo.");
   }
   if (selection.manual.some(slug => map.get(slug)!.kind === "package" || !map.get(slug)!.individuallySelectable)) throw Error("Este trabajo solo se puede seleccionar dentro de un paquete.");
   if (selection.packages.some(slug => !map.get(slug)!.individuallySelectable)) throw Error("Este paquete solo se puede contratar dentro de otro paquete.");

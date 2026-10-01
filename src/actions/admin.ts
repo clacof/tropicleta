@@ -217,7 +217,7 @@ const money = z
   .pipe(z.number().int().min(0).max(10_000_000).nullable());
 
 const serviceSchema = z.object({
-  hierarchy: z.string().transform((text, ctx) => { try { return JSON.parse(text); } catch { ctx.addIssue({ code: "custom", message: "Configuración de paquete inválida" }); return z.NEVER; } }).pipe(z.object({ kind: z.enum(["individual", "package"]), vehicles: z.array(z.enum(["bicicleta", "electrica", "scooter"])).min(1), requiresDoubleSuspension: z.boolean().default(false), individuallySelectable: z.boolean(), components: z.array(z.object({ slug: z.string().min(1), required: z.boolean() })).max(40) })),
+  hierarchy: z.string().transform((text, ctx) => { try { return JSON.parse(text); } catch { ctx.addIssue({ code: "custom", message: "Configuración de paquete inválida" }); return z.NEVER; } }).pipe(z.object({ kind: z.enum(["individual", "package"]), vehicles: z.array(z.enum(["bicicleta", "electrica", "scooter"])).min(1), requiresDoubleSuspension: z.boolean().default(false), excludesDoubleSuspension: z.boolean().default(false), individuallySelectable: z.boolean(), components: z.array(z.object({ slug: z.string().min(1), required: z.boolean() })).max(40) })),
   id: z.coerce.number().int().optional(),
   name: z.string().trim().min(2, "Nombre requerido").max(120),
   slug: z.string().trim().max(120).optional(),
@@ -269,7 +269,7 @@ export async function saveService(_prev: FormState, fd: FormData): Promise<FormS
       const current = rows.find(s => s.id === d.id);
       if (d.id && !current) throw Error("El servicio ya no existe.");
       if (current?.removed) throw Error("Recupera este servicio antes de editarlo.");
-      if (data.requiresDoubleSuspension && data.vehicles.includes("scooter")) throw Error("La doble suspensión solo corresponde a bicicletas.");
+
       const candidate = { ...current, ...data };
       validateHierarchy([...rows.filter(s => s.id !== d.id), candidate]);
       if (d.id) await tx.update(schema.services).set(data).where(eq(schema.services.id, d.id));
@@ -508,4 +508,25 @@ export async function deleteCategory(_prev: FormState, fd: FormData): Promise<Fo
   }
   revalidatePublicData();
   return { ok: true };
+}
+
+export async function saveVehicleCatalog(_prev: FormState, fd: FormData): Promise<FormState> {
+  await requireAdmin();
+  try {
+    await db.transaction(async tx => {
+      const rows = await tx.select().from(schema.services).for("update");
+      const updates = rows.filter(s=>!s.removed).map(s=>{
+        const bike=fd.get(`bike-${s.id}`)==="on", double=fd.get(`double-${s.id}`)==="on", scooter=fd.get(`scooter-${s.id}`)==="on";
+        if(!bike&&!double&&!scooter&&!s.vehicles.includes("electrica")) throw Error(`Selecciona al menos un vehículo para “${s.name}”. Para ocultarlo, desactívalo desde su ficha.`);
+
+        const vehicles: import("@/lib/package-quote").Vehicle[]=[...(bike||double?["bicicleta" as const]:[]),...(s.vehicles.includes("electrica")?["electrica" as const]:[]),...(scooter?["scooter" as const]:[])];
+        return {...s,vehicles,requiresDoubleSuspension:double&&!bike,excludesDoubleSuspension:!double};
+      });
+      validateHierarchy([...updates,...rows.filter(s=>s.removed)]);
+      for(const s of updates) await tx.update(schema.services).set({vehicles:s.vehicles,requiresDoubleSuspension:s.requiresDoubleSuspension,excludesDoubleSuspension:s.excludesDoubleSuspension}).where(eq(schema.services.id,s.id));
+    });
+    await audit("editar","vehículos del cotizador",null,"Compatibilidad de servicios y packs actualizada");
+    revalidatePublicData();
+    return {ok:true,message:"Vehículos guardados. El cotizador ya usa esta configuración."};
+  } catch(e) { return {message:e instanceof Error?e.message:"No se pudo guardar la configuración."}; }
 }
