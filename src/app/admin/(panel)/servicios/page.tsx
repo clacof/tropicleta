@@ -28,7 +28,7 @@ export default async function ServiciosAdmin({searchParams}:{searchParams:Promis
         </Link>
       </div>
       <Link className="tp-btn tp-btn-ghost tp-btn-sm" href={showRemoved?"/admin/servicios/":"/admin/servicios/?quitados=1"}>{showRemoved?"Volver al catálogo":"Ver quitados / recuperar"}</Link>
-      <section className="tp-panel"><h2>Vehículos</h2><p className="tp-hint">Configura los servicios y packs de Bicicleta, Bicicleta doble suspensión y Scooter eléctrico.</p><Link className="tp-btn tp-btn-secondary tp-btn-sm" href="/admin/servicios/vehiculos/">Configurar vehículos</Link></section>
+      <section className="tp-panel"><h2>Vehículos</h2><p className="tp-hint">Añade o quita vehículos y configura sus servicios y packs.</p><Link className="tp-btn tp-btn-secondary tp-btn-sm" href="/admin/servicios/vehiculos/">Configurar vehículos</Link></section>
       <PacksAdminPanel catalog={rows.map(({s})=>s)} showRemoved={showRemoved} />
       <h2>Servicios individuales</h2>
       <p className="tp-muted tp-small">Edita servicios, paquetes, vehículos y componentes desde cada ficha. Sin precio = “A cotizar”.</p>

@@ -217,7 +217,7 @@ const money = z
   .pipe(z.number().int().min(0).max(10_000_000).nullable());
 
 const serviceSchema = z.object({
-  hierarchy: z.string().transform((text, ctx) => { try { return JSON.parse(text); } catch { ctx.addIssue({ code: "custom", message: "Configuración de paquete inválida" }); return z.NEVER; } }).pipe(z.object({ kind: z.enum(["individual", "package"]), vehicles: z.array(z.enum(["bicicleta", "electrica", "scooter"])).min(1), requiresDoubleSuspension: z.boolean().default(false), excludesDoubleSuspension: z.boolean().default(false), individuallySelectable: z.boolean(), components: z.array(z.object({ slug: z.string().min(1), required: z.boolean() })).max(40) })),
+  hierarchy: z.string().transform((text, ctx) => { try { return JSON.parse(text); } catch { ctx.addIssue({ code: "custom", message: "Configuración de paquete inválida" }); return z.NEVER; } }).pipe(z.object({ kind: z.enum(["individual", "package"]), vehicles: z.array(z.string().min(1).max(20)).min(1), requiresDoubleSuspension: z.boolean().default(false), excludesDoubleSuspension: z.boolean().default(false), individuallySelectable: z.boolean(), components: z.array(z.object({ slug: z.string().min(1), required: z.boolean() })).max(40) })),
   id: z.coerce.number().int().optional(),
   name: z.string().trim().min(2, "Nombre requerido").max(120),
   slug: z.string().trim().max(120).optional(),
@@ -515,12 +515,13 @@ export async function saveVehicleCatalog(_prev: FormState, fd: FormData): Promis
   try {
     await db.transaction(async tx => {
       const rows = await tx.select().from(schema.services).for("update");
-      const updates = rows.filter(s=>!s.removed).map(s=>{
-        const bike=fd.get(`bike-${s.id}`)==="on", double=fd.get(`double-${s.id}`)==="on", scooter=fd.get(`scooter-${s.id}`)==="on";
-        if(!bike&&!double&&!scooter&&!s.vehicles.includes("electrica")) throw Error(`Selecciona al menos un vehículo para “${s.name}”. Para ocultarlo, desactívalo desde su ficha.`);
-
-        const vehicles: import("@/lib/package-quote").Vehicle[]=[...(bike||double?["bicicleta" as const]:[]),...(s.vehicles.includes("electrica")?["electrica" as const]:[]),...(scooter?["scooter" as const]:[])];
-        return {...s,vehicles,requiresDoubleSuspension:double&&!bike,excludesDoubleSuspension:!double};
+      const vehicles=await tx.select().from(schema.quoteVehicles).where(eq(schema.quoteVehicles.removed,false));
+      const keys=vehicles.map(v=>v.slug);
+      const updates=rows.filter(s=>!s.removed).map(s=>{
+        const selected=keys.filter(key=>fd.get(`vehicle-${key}-${s.id}`)==="on");
+        const preserved=s.vehicles.filter(key=>!keys.includes(key));
+        if(!selected.length&&!preserved.length) throw Error(`Selecciona al menos un vehículo para “${s.name}”. Para ocultarlo, desactívalo desde su ficha.`);
+        return {...s,vehicles:[...selected,...preserved],requiresDoubleSuspension:false,excludesDoubleSuspension:false};
       });
       validateHierarchy([...updates,...rows.filter(s=>s.removed)]);
       for(const s of updates) await tx.update(schema.services).set({vehicles:s.vehicles,requiresDoubleSuspension:s.requiresDoubleSuspension,excludesDoubleSuspension:s.excludesDoubleSuspension}).where(eq(schema.services.id,s.id));
@@ -529,4 +530,30 @@ export async function saveVehicleCatalog(_prev: FormState, fd: FormData): Promis
     revalidatePublicData();
     return {ok:true,message:"Vehículos guardados. El cotizador ya usa esta configuración."};
   } catch(e) { return {message:e instanceof Error?e.message:"No se pudo guardar la configuración."}; }
+}
+
+export async function manageQuoteVehicle(_prev:FormState,fd:FormData):Promise<FormState>{
+  await requireAdmin();
+  const intent=z.enum(["add","remove","restore"]).safeParse(fd.get("intent"));
+  if(!intent.success)return {message:"Acción inválida."};
+  try{
+    if(intent.data==="add"){
+      const parsed=z.string().trim().min(2).max(60).safeParse(fd.get("name"));
+      if(!parsed.success)return {message:"Escribe un nombre de entre 2 y 60 caracteres."};
+      const name=parsed.data;const slug=slugify(name).slice(0,20);
+      if(!slug)return {message:"Escribe un nombre válido."};
+      const [vehicle]=await db.insert(schema.quoteVehicles).values({name,slug}).returning();
+      await audit("crear","vehículo",vehicle.id,name);
+    }else{
+      const id=parseId(fd);
+      await db.transaction(async tx=>{
+        const vehicles=await tx.select().from(schema.quoteVehicles).for("update");
+        const vehicle=vehicles.find(v=>v.id===id);if(!vehicle)throw Error("El vehículo ya no existe.");
+        if(intent.data==="remove"&&!vehicle.removed&&vehicles.filter(v=>!v.removed).length<=1)throw Error("Conserva al menos un vehículo para el cotizador.");
+        await tx.update(schema.quoteVehicles).set({removed:intent.data==="remove"}).where(eq(schema.quoteVehicles.id,id));
+      });
+      await audit(intent.data==="remove"?"quitar":"recuperar","vehículo",id,"Vehículo del cotizador");
+    }
+    revalidatePublicData();return {ok:true,message:intent.data==="add"?"Vehículo añadido. Ahora asigna sus servicios y packs.":"Vehículos actualizados."};
+  }catch(e){return {message:isUniqueViolation(e)?"Ya existe ese vehículo. Puedes recuperarlo si fue quitado.":e instanceof Error?e.message:"No se pudo guardar el vehículo."};}
 }

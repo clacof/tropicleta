@@ -33,6 +33,14 @@ export const cashEntries = pgTable("cash_entries", {
 
 /* ============================ SERVICIOS ============================ */
 
+export const quoteVehicles = pgTable("quote_vehicles", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 20 }).notNull().unique(),
+  name: varchar("name", { length: 60 }).notNull(),
+  removed: boolean("removed").notNull().default(false),
+  sort: integer("sort").notNull().default(0),
+});
+
 export const serviceCategories = pgTable("service_categories", {
   id: serial("id").primaryKey(),
   slug: varchar("slug", { length: 60 }).notNull().unique(), // coincide con las anclas /servicios/#slug

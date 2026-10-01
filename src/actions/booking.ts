@@ -9,7 +9,7 @@ import { displayPhone, formatDate, shortCode } from "@/lib/format";
 import { serviceQuote, transportLabels } from "@/lib/service-quote";
 import { formatCLP } from "@/lib/format";
 import { bookingSchema } from "@/lib/validation";
-import { packageQuote, vehicleLabels } from "@/lib/package-quote";
+import { packageQuote } from "@/lib/package-quote";
 import { selectionSchema } from "@/lib/quote-selection";
 
 export async function createBooking(_prev: FormState, fd: FormData): Promise<FormState> {
@@ -18,6 +18,8 @@ export async function createBooking(_prev: FormState, fd: FormData): Promise<For
   if (!parsed.success) return { errors: zodErrors(parsed.error), values };
   const d = parsed.data;
 
+  const [vehicle]=await db.select().from(schema.quoteVehicles).where(and(eq(schema.quoteVehicles.slug,d.vehicleType),eq(schema.quoteVehicles.removed,false))).limit(1);
+  if(!vehicle || d.doubleSuspension) return {errors:{services:"El vehículo cambió. Recarga y elige un vehículo disponible."},values};
   let code: string;
   try {
     // Solo se aceptan servicios existentes (se guardan los nombres para el historial)
@@ -32,7 +34,7 @@ export async function createBooking(_prev: FormState, fd: FormData): Promise<For
 
     const quote = serviceQuote(found, d.pickup, d.pickupCommune, d.transportMode, d.firstService);
     const quoteText = found.map(s => s.name + ": " + (s.price === null ? "A cotizar" : (s.priceFrom ? "Desde " : "") + formatCLP(s.price))).join("; ") + "; Subtotal de servicios: " + formatCLP(quote.subtotal) + (d.firstService ? "; Primer servicio, descuento 10% en servicios: -" + formatCLP(quote.discount) : "") + (d.pickup ? "; " + transportLabels[d.transportMode] + ": " + (quote.transport === null ? "A cotizar" : formatCLP(quote.transport)) : "") + "; Total estimado: " + formatCLP(quote.total) + (quote.pending ? "; Valores pendientes de cotizar." : "") + "; Sujeto a diagnóstico y confirmación.";
-    const packageDetail = "Vehículo: " + (d.doubleSuspension && d.vehicleType === "bicicleta" ? "Bicicleta doble suspensión" : d.vehicleType === "scooter" ? "Scooter eléctrico" : vehicleLabels[d.vehicleType]) + "; " + found.map(s=>s.name + (s.automatic?" (paquete reconocido)":"") + (s.included.length?" · Incluidos: " + s.included.map(slug=>catalog.find(s=>s.slug===slug)!.name).join(", "):"")).join("; ");
+    const packageDetail = "Vehículo: " + vehicle.name + "; " + found.map(s=>s.name + (s.automatic?" (paquete reconocido)":"") + (s.included.length?" · Incluidos: " + s.included.map(slug=>catalog.find(s=>s.slug===slug)!.name).join(", "):"")).join("; ");
     code = shortCode("TP");
     await db.insert(schema.bookings).values({
       code,

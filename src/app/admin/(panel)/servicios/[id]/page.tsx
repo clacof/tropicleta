@@ -31,7 +31,7 @@ export default async function ServicioAdmin({ params, searchParams, packMode = f
       </div>
       {(await searchParams).dependencias && <p className="tp-alert" role="alert">Este servicio está vinculado a un pack. Quita primero esa referencia de los packs que lo utilizan.</p>}
       {(await searchParams).recuperacion && <p className="tp-alert" role="alert">No se puede recuperar este pack todavía: recupera primero sus componentes y revisa sus referencias.</p>}
-      {service?.removed ? <p className="tp-alert">Este servicio fue quitado. Recupéralo desde el listado antes de editarlo.</p> : <ServiceForm service={service} categories={categories} packMode={packMode} services={await db.select().from(schema.services).orderBy(asc(schema.services.sort))} />}
+      {service?.removed ? <p className="tp-alert">Este servicio fue quitado. Recupéralo desde el listado antes de editarlo.</p> : <ServiceForm quoteVehicles={await db.select().from(schema.quoteVehicles).where(eq(schema.quoteVehicles.removed,false)).orderBy(asc(schema.quoteVehicles.sort))} service={service} categories={categories} packMode={packMode} services={await db.select().from(schema.services).orderBy(asc(schema.services.sort))} />}
     </>
   );
 }

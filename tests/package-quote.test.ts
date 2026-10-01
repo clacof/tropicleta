@@ -9,6 +9,9 @@ import { serviceQuote } from "../src/lib/service-quote";
 import { packageReference } from "../src/lib/package-reference";
 const individual=(slug:string,price:number|null=10000):PackageService=>({slug,name:slug,price,priceFrom:false,kind:"individual",components:[],vehicles:["bicicleta"],individuallySelectable:true,active:true});
 const pack=(slug:string,price:number,children:string[]):PackageService=>({...individual(slug,price),kind:"package",components:children.map(slug=>({slug,required:true}))});
+const customService={...individual("custom"),vehicles:["bicicleta-de-ruta"]};
+assert.deepEqual(packageQuote([customService],{manual:["custom"],packages:[],excluded:[]},"bicicleta-de-ruta").leaves,["custom"]);
+assert.throws(()=>packageQuote([customService],{manual:["custom"],packages:[],excluded:[]},"bicicleta"),/vehículo/);
 // Fixture artificial: no establece la composición de los paquetes reales del taller.
 const catalog=[individual("a"),individual("b"),individual("c",20000),individual("extra",15000),pack("basic",15000,["a","b"]),pack("complete",30000,["basic","c"])];
 const bikeOnly={...individual("bike-only"),excludesDoubleSuspension:true};
@@ -86,7 +89,8 @@ async function persistence() {
     assert.equal(rows.find(s=>s.slug==="purga-frenos-hidraulicos")!.price,15000);
     const activePacks=rows.map(s=>s.components.length?{...s,active:true}:s);
     const doubleSelection={manual:[],packages:["pack-doble-suspension-sangrado"],excluded:[]};
-    assert.throws(()=>packageQuote(activePacks,doubleSelection,"bicicleta"),/vehículo/);
+    assert.equal(serviceQuote(packageQuote(activePacks,doubleSelection,"bicicleta").lines).total,165000);
+    assert.deepEqual((await db.select().from(schema.quoteVehicles)).filter(v=>!v.removed).map(v=>v.slug).sort(),["bicicleta","scooter"]);
     assert.equal(serviceQuote(packageQuote(activePacks,doubleSelection,"bicicleta",true).lines).total,165000);
     const fullSelection={manual:[],packages:["mantencion-completa"],excluded:[]};
     assert.equal(serviceQuote(packageQuote(activePacks,fullSelection,"bicicleta").lines).total,50000);

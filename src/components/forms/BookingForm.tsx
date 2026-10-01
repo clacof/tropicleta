@@ -1,7 +1,7 @@
 "use client";
 
 import { PackageSelector, type PackageCatalog } from "./PackageSelector";
-import { packageQuote, supportsVehicle, toggleSelection, selectedLeaves, emptySelection, type Selection, type Vehicle } from "@/lib/package-quote";
+import { packageQuote, supportsVehicle, toggleSelection, selectedLeaves, emptySelection, type QuoteVehicle, type Selection, type Vehicle } from "@/lib/package-quote";
 import { formatCLP } from "@/lib/format";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { serviceQuote, pickupPrices, oneWayPrices, transportLabels, type TransportMode, type QuoteService } from "@/lib/service-quote";
@@ -15,12 +15,12 @@ import type { FormState } from "@/lib/forms";
 
 type Catalog = PackageCatalog;
 
-export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalog; preselected?: string; minDate: string }) {
+export function BookingForm({ catalog, vehicles, preselected, minDate }: { catalog: Catalog; vehicles:QuoteVehicle[]; preselected?: string; minDate: string }) {
   const [state, action] = useActionState<FormState, FormData>(createBooking, {});
   const all = catalog.flatMap(c => c.services);
-  const initial = all.find(s => s.slug === preselected && s.vehicles.some(v => v === "bicicleta" || v === "scooter"));
-  const [vehicle, setVehicle] = useState<Vehicle>(initial?.vehicles.includes("bicicleta") ? "bicicleta" : initial ? "scooter" : "bicicleta");
-  const [doubleSuspension,setDoubleSuspension] = useState(initial?.requiresDoubleSuspension ?? false);
+  const initial = all.find(s => s.slug === preselected && vehicles.some(v=>s.vehicles.includes(v.slug)));
+  const [vehicle, setVehicle] = useState<Vehicle>(vehicles.find(v=>initial?.vehicles.includes(v.slug))?.slug ?? vehicles[0]?.slug ?? "");
+  const [doubleSuspension,setDoubleSuspension] = useState(false);
   const [selection, setSelection] = useState<Selection>(initial ? {manual:initial.kind === "package" ? [] : [initial.slug],packages:initial.kind === "package" ? [initial.slug] : [],excluded:[]} : emptySelection);
   const [query, setQuery] = useState("");
   const [pickup, setPickup] = useState(false);
@@ -28,7 +28,7 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
   const [transportMode, setTransportMode] = useState<TransportMode>("both");
   const [firstService, setFirstService] = useState(false);
   const [draftReady,setDraftReady] = useState(false);
-  useEffect(()=>{try {const text=sessionStorage.getItem("tp-service-draft-v1"); if(text && !preselected) {const saved=JSON.parse(text); const candidate=selectionSchema.parse(saved.selection); if(saved.vehicle === "bicicleta" || saved.vehicle === "scooter") {packageQuote(all,candidate,saved.vehicle,saved.vehicle === "bicicleta" && !!saved.doubleSuspension);setDoubleSuspension(saved.vehicle === "bicicleta" && !!saved.doubleSuspension);setVehicle(saved.vehicle);setSelection(candidate);setPickup(!!saved.pickup);setCommune(saved.commune??"");setFirstService(!!saved.firstService);if(saved.transportMode in transportLabels)setTransportMode(saved.transportMode);}}}catch{}setDraftReady(true);},[]);
+  useEffect(()=>{try {const text=sessionStorage.getItem("tp-service-draft-v1"); if(text && !preselected) {const saved=JSON.parse(text); const candidate=selectionSchema.parse(saved.selection); if(vehicles.some(v=>v.slug===saved.vehicle) && !saved.doubleSuspension) {packageQuote(all,candidate,saved.vehicle,saved.vehicle === "bicicleta" && !!saved.doubleSuspension);setDoubleSuspension(saved.vehicle === "bicicleta" && !!saved.doubleSuspension);setVehicle(saved.vehicle);setSelection(candidate);setPickup(!!saved.pickup);setCommune(saved.commune??"");setFirstService(!!saved.firstService);if(saved.transportMode in transportLabels)setTransportMode(saved.transportMode);}}}catch{}setDraftReady(true);},[]);
   useEffect(()=>{if(draftReady)try{sessionStorage.setItem("tp-service-draft-v1",JSON.stringify({vehicle,doubleSuspension,selection,pickup,commune,firstService,transportMode}));}catch{}},[draftReady,vehicle,doubleSuspension,selection,pickup,commune,firstService,transportMode]);
   let calculation; let selectionError = "";
   try { calculation = packageQuote(all, selection, vehicle, doubleSuspension); } catch(e) { selectionError = e instanceof Error ? e.message : "No se puede cotizar esta selección."; }
@@ -36,7 +36,7 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
   const quote = serviceQuote(chosen, pickup, commune, transportMode, firstService);
   const toggle = (slug:string) => setSelection(prev => toggleSelection(all,prev,slug));
   const priceLabel = (s: QuoteService) => s.price === null ? "A cotizar" : (s.priceFrom ? "Desde " : "") + formatCLP(s.price);
-  const vehicleLabel = doubleSuspension ? "Bicicleta doble suspensión" : vehicle === "scooter" ? "Scooter eléctrico" : "Bicicleta";
+  const vehicleLabel = vehicles.find(v=>v.slug===vehicle)?.name ?? "Selecciona un vehículo";
   const message = ["Hola Tropicleta, quiero solicitar esta cotización:", "Vehículo: " + vehicleLabel, ...chosen.flatMap(s => [s.name + ": " + priceLabel(s), ...s.included.map(slug=>"  Incluido: " + all.find(s=>s.slug===slug)!.name)]),
     "Subtotal de servicios: " + formatCLP(quote.subtotal),
     ...(firstService ? ["Primer servicio: descuento 10% en servicios · -" + formatCLP(quote.discount)] : []),
@@ -60,7 +60,7 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
         </div>
       )}
 
-      <PackageSelector catalog={catalog} selection={selection} vehicle={vehicle} doubleSuspension={doubleSuspension} query={query} covered={chosen.flatMap(s=>s.included)} onQuery={setQuery} onToggle={toggle} onVehicle={(v,isDouble)=>{setVehicle(v);setDoubleSuspension(isDouble);setSelection(prev=>({manual:prev.manual.filter(slug=>!!all.find(s=>s.slug===slug) && supportsVehicle(all.find(s=>s.slug===slug)!,v,isDouble)),packages:prev.packages.filter(slug=>{const service=all.find(s=>s.slug===slug);return !!service && supportsVehicle(service,v,isDouble);}),excluded:prev.excluded.filter(slug=>!!all.find(s=>s.slug===slug) && supportsVehicle(all.find(s=>s.slug===slug)!,v,isDouble))}));}} />
+      <PackageSelector vehicles={vehicles} catalog={catalog} selection={selection} vehicle={vehicle} doubleSuspension={doubleSuspension} query={query} covered={chosen.flatMap(s=>s.included)} onQuery={setQuery} onToggle={toggle} onVehicle={(v,isDouble)=>{setVehicle(v);setDoubleSuspension(isDouble);setSelection(prev=>({manual:prev.manual.filter(slug=>!!all.find(s=>s.slug===slug) && supportsVehicle(all.find(s=>s.slug===slug)!,v,isDouble)),packages:prev.packages.filter(slug=>{const service=all.find(s=>s.slug===slug);return !!service && supportsVehicle(service,v,isDouble);}),excluded:prev.excluded.filter(slug=>!!all.find(s=>s.slug===slug) && supportsVehicle(all.find(s=>s.slug===slug)!,v,isDouble))}));}} />
       <input type="hidden" name="selection" value={JSON.stringify(selection)} />
       {selectedLeaves(all,selection).map(slug=><input key={slug} type="hidden" name="services" value={slug} />)}
       {selectionError && <p className="tp-alert" role="alert">{selectionError}</p>}
@@ -138,7 +138,7 @@ export function BookingForm({ catalog, preselected, minDate }: { catalog: Catalo
       <input type="text" name="website" tabIndex={-1} autoComplete="off" hidden aria-hidden="true" />
 
       <div>
-        <SubmitButton disabled={!!selectionError || !chosen.length} pendingText="Enviando solicitud…">Enviar cotización y solicitar hora</SubmitButton>
+        <SubmitButton disabled={!vehicles.some(v=>v.slug===vehicle) || !!selectionError || !chosen.length} pendingText="Enviando solicitud…">Enviar cotización y solicitar hora</SubmitButton>
       </div>
       </div>
       <aside className="tp-local-box tp-quote-summary" aria-label="Tu cotización">

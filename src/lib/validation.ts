@@ -51,7 +51,7 @@ export const bookingSchema = z
     name: trimmed("Ingresa tu nombre", 2, 80),
     phone: phoneSchema,
     email: optionalEmail,
-    vehicleType: z.enum(["bicicleta", "electrica", "scooter"], { error: "Elige el tipo de vehículo" }),
+    vehicleType: z.string().trim().min(1, "Elige el tipo de vehículo").max(20),
     doubleSuspension: z.string().optional().transform(v => v === "on"),
     selection: z.string().max(12000).optional(),
     vehicleDetails: z.string().trim().max(200).optional(),

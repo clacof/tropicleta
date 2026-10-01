@@ -1,6 +1,7 @@
 import type { QuoteService } from "./service-quote";
-export const vehicleLabels = { bicicleta: "Bicicleta", electrica: "Bicicleta eléctrica", scooter: "Scooter" };
-export type Vehicle = keyof typeof vehicleLabels;
+export const vehicleLabels: Record<string,string> = { bicicleta: "Bicicleta", electrica: "Bicicleta eléctrica", scooter: "Scooter eléctrico" };
+export type Vehicle = string;
+export type QuoteVehicle = { slug: string; name: string };
 export type Component = { slug: string; required: boolean };
 export type PackageService = QuoteService & { kind: string; components: Component[]; vehicles: Vehicle[]; individuallySelectable: boolean; active: boolean; removed?: boolean; requiresDoubleSuspension?: boolean; excludesDoubleSuspension?: boolean };
 export function supportsVehicle(s: PackageService, vehicle: Vehicle, doubleSuspension = false) {
