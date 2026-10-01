@@ -4,6 +4,7 @@ import { validateHierarchy } from "@/lib/package-quote";
 import { and, count, eq, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { renameServiceReferences } from "@/lib/service-edit";
+import { serviceDeletionBlocker } from "@/lib/service-trash";
 import { redirect } from "next/navigation";
 import { revalidatePublicData } from "@/lib/revalidate";
 import { z } from "zod";
@@ -461,6 +462,26 @@ export async function restoreService(fd: FormData) {
   } catch {redirect(`/admin/servicios/${id}/?recuperacion=1`);}
   if (s) await audit("recuperar", "servicio", id, s.name);
   revalidatePublicData();
+}
+
+export async function deleteServicePermanently(fd: FormData) {
+  await requireAdmin();
+  const id=parseId(fd);
+  const result=await db.transaction(async tx=>{
+    const catalog=await tx.select().from(schema.services).for("update");
+    const service=catalog.find(s=>s.id===id);
+    if (!service) return null;
+    const bookings=await tx.select({serviceNames:schema.bookings.serviceNames,quoteSnapshot:schema.bookings.quoteSnapshot}).from(schema.bookings);
+    const blocked=serviceDeletionBlocker(service,catalog,bookings);
+    if (blocked) return {blocked,name:service.name,slug:service.slug};
+    await tx.delete(schema.services).where(and(eq(schema.services.id,id),eq(schema.services.removed,true)));
+    return {blocked:null,name:service.name,slug:service.slug};
+  });
+  if (result?.blocked) redirect(`/admin/servicios/?quitados=1&bloqueado=${id}`);
+  if (result) await audit("eliminar definitivamente","servicio",id,`${result.name} · URL liberada: ${result.slug}`);
+  revalidatePublicData();
+  revalidatePath("/admin/servicios","layout");
+  redirect("/admin/servicios/?quitados=1&eliminado=1");
 }
 
 /* ---------------------------- Categorías ---------------------------- */

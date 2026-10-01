@@ -235,6 +235,8 @@
 .tp-package-option b { color:#ffad32; margin-block:7px; font-size:21px; }
 .tp-quote-category { margin:18px 0 10px; font-size:15px; line-height:1.4; }
 .tp-package-editor { display:grid; gap:12px; }
+.tp-pack-component-category { margin-top:20px; padding-top:16px; border-top:1px solid var(--border, #333); }
+.tp-pack-component-category h3 { margin:0 0 12px; color:#f59e0b; font-size:1rem; }
 .tp-package-editor > div > .tp-hint { display:block; margin:6px 0 0 12px; }
 @media(max-width:600px) { .tp-package-grid { grid-template-columns:1fr; } }
 
