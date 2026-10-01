@@ -32,7 +32,7 @@ export async function createBooking(_prev: FormState, fd: FormData): Promise<For
 
     const quote = serviceQuote(found, d.pickup, d.pickupCommune, d.transportMode, d.firstService);
     const quoteText = found.map(s => s.name + ": " + (s.price === null ? "A cotizar" : (s.priceFrom ? "Desde " : "") + formatCLP(s.price))).join("; ") + "; Subtotal de servicios: " + formatCLP(quote.subtotal) + (d.firstService ? "; Primer servicio, descuento 10% en servicios: -" + formatCLP(quote.discount) : "") + (d.pickup ? "; " + transportLabels[d.transportMode] + ": " + (quote.transport === null ? "A cotizar" : formatCLP(quote.transport)) : "") + "; Total estimado: " + formatCLP(quote.total) + (quote.pending ? "; Valores pendientes de cotizar." : "") + "; Sujeto a diagnóstico y confirmación.";
-    const packageDetail = "Vehículo: " + vehicleLabels[d.vehicleType] + "; " + found.map(s=>s.name + (s.automatic?" (paquete reconocido)":"") + (s.included.length?" · Incluidos: " + s.included.map(slug=>catalog.find(s=>s.slug===slug)!.name).join(", "):"")).join("; ");
+    const packageDetail = "Vehículo: " + (d.doubleSuspension && d.vehicleType === "bicicleta" ? "Bicicleta doble suspensión" : d.vehicleType === "scooter" ? "Scooter eléctrico" : vehicleLabels[d.vehicleType]) + "; " + found.map(s=>s.name + (s.automatic?" (paquete reconocido)":"") + (s.included.length?" · Incluidos: " + s.included.map(slug=>catalog.find(s=>s.slug===slug)!.name).join(", "):"")).join("; ");
     code = shortCode("TP");
     await db.insert(schema.bookings).values({
       code,
