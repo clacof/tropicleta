@@ -21,7 +21,7 @@ async function main() {
     const services = await db.select().from(schema.services);
     const categories = await db.select().from(schema.serviceCategories);
     const active = services.filter(s => s.active);
-    assert.equal(active.length, officialServices.length);
+    assert.equal(active.length, officialServices.length - 4 + 3); // Cuatro packs en borrador; tres componentes nuevos confirmados.
     assert.ok(excludedServiceSlugs.every(slug => !active.some(s => s.slug === slug)));
     for (const [, slug, name, price, summary] of officialServices) {
       const service = services.find((s) => s.slug === slug)!;
@@ -32,7 +32,13 @@ async function main() {
       if (slug !== "retiro-y-entrega") assert.equal(service.priceFrom, false);
     }
     const products = await db.select().from(schema.products);
-    assert.ok(products.every((p) => !p.active && p.stock === 0 && p.price === 0));
+    const raceLub = products.find((p) => p.slug === "sellador-race-lub-250-ml")!;
+    assert.ok(raceLub);
+    assert.equal(raceLub.stock, 6);
+    assert.equal(raceLub.price, 10000);
+    assert.equal(raceLub.active, true);
+    assert.deepEqual(raceLub.images, ["/productos/sellador-race-lub-250-ml.png"]);
+    assert.ok(products.filter((p) => p.id !== raceLub.id).every((p) => !p.active && p.stock === 0 && p.price === 0));
     await db.update(schema.services).set({ price: 12345, summary: "Texto del taller", active: false }).where(eq(schema.services.slug, "mantencion-basica"));
     await db.update(schema.products).set({ price: 8900, stock: 7, active: true }).where(eq(schema.products.slug, products[0].slug));
     const again = await completeCatalog(db as unknown as DB);

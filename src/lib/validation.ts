@@ -51,12 +51,14 @@ export const bookingSchema = z
     name: trimmed("Ingresa tu nombre", 2, 80),
     phone: phoneSchema,
     email: optionalEmail,
-    vehicleType: z.enum(["bicicleta", "scooter"], { error: "Elige bicicleta o scooter" }),
+    vehicleType: z.enum(["bicicleta", "electrica", "scooter"], { error: "Elige el tipo de vehículo" }),
+    doubleSuspension: z.string().optional().transform(v => v === "on"),
+    selection: z.string().max(12000).optional(),
     vehicleDetails: z.string().trim().max(200).optional(),
     services: z
       .union([z.string(), z.array(z.string())], { error: "Elige al menos un servicio" })
       .transform((v) => (Array.isArray(v) ? v : [v]))
-      .pipe(z.array(z.string().min(1)).min(1, "Elige al menos un servicio").max(10)),
+      .pipe(z.array(z.string().min(1)).min(1, "Elige al menos un servicio").max(40)),
     preferredDate: z
       .string({ error: "Elige una fecha" })
       .pipe(z.iso.date("Elige una fecha válida"))

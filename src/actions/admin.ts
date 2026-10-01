@@ -1,4 +1,5 @@
 "use server";
+import { validateHierarchy } from "@/lib/package-quote";
 
 import { and, count, eq, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -137,6 +138,7 @@ export async function registerBookingPayment(_prev: FormState, fd: FormData): Pr
       date: d.date,
       type: "ingreso",
       category: "Taller",
+      area: "servicios",
       description: `Reserva ${b.code} · ${b.name}`,
       amount: d.amount,
       method: d.method,
@@ -215,6 +217,7 @@ const money = z
   .pipe(z.number().int().min(0).max(10_000_000).nullable());
 
 const serviceSchema = z.object({
+  hierarchy: z.string().transform((text, ctx) => { try { return JSON.parse(text); } catch { ctx.addIssue({ code: "custom", message: "Configuración de paquete inválida" }); return z.NEVER; } }).pipe(z.object({ kind: z.enum(["individual", "package"]), vehicles: z.array(z.enum(["bicicleta", "electrica", "scooter"])).min(1), requiresDoubleSuspension: z.boolean().default(false), individuallySelectable: z.boolean(), components: z.array(z.object({ slug: z.string().min(1), required: z.boolean() })).max(40) })),
   id: z.coerce.number().int().optional(),
   name: z.string().trim().min(2, "Nombre requerido").max(120),
   slug: z.string().trim().max(120).optional(),
@@ -249,6 +252,7 @@ export async function saveService(_prev: FormState, fd: FormData): Promise<FormS
     featured: d.featured === "on",
     active: d.active === "on",
     sort: d.sort,
+    ...d.hierarchy,
   };
   if (data.featured && data.active) {
     const s = schema.services;
@@ -260,11 +264,20 @@ export async function saveService(_prev: FormState, fd: FormData): Promise<FormS
       return { errors: { featured: `Ya hay ${MAX_FEATURED_SERVICES} servicios destacados. Quita uno antes.` }, message: `Ya hay ${MAX_FEATURED_SERVICES} servicios destacados. Quita uno antes.`, values };
   }
   try {
-    if (d.id) await db.update(schema.services).set(data).where(eq(schema.services.id, d.id));
-    else await db.insert(schema.services).values(data);
+    await db.transaction(async tx => {
+      const rows = await tx.select().from(schema.services).for("update");
+      const current = rows.find(s => s.id === d.id);
+      if (d.id && !current) throw Error("El servicio ya no existe.");
+      if (current?.removed) throw Error("Recupera este servicio antes de editarlo.");
+      if (data.requiresDoubleSuspension && data.vehicles.includes("scooter")) throw Error("La doble suspensión solo corresponde a bicicletas.");
+      const candidate = { ...current, ...data };
+      validateHierarchy([...rows.filter(s => s.id !== d.id), candidate]);
+      if (d.id) await tx.update(schema.services).set(data).where(eq(schema.services.id, d.id));
+      else await tx.insert(schema.services).values(data);
+    });
   } catch (e) {
     if (isUniqueViolation(e)) return { errors: { slug: "Ya existe un servicio con ese slug" }, values };
-    throw e;
+    return { message: e instanceof Error ? e.message : "No se pudo guardar la configuración.", values };
   }
   await audit(d.id ? "editar" : "crear", "servicio", d.id ?? null, data.name);
   revalidatePublicData();
@@ -275,7 +288,15 @@ export async function hideService(fd: FormData) {
   await requireAdmin();
   const id = parseId(fd);
   // Se desactiva en vez de borrar para no romper enlaces ni historial
-  const [s] = await db.update(schema.services).set({ active: false }).where(eq(schema.services.id, id)).returning();
+  let s;
+  try {
+    s = await db.transaction(async tx => {
+      const rows = await tx.select().from(schema.services).for("update");
+      validateHierarchy(rows.map(s=>s.id===id?{...s,active:false}:s));
+      const [updated] = await tx.update(schema.services).set({active:false}).where(eq(schema.services.id,id)).returning();
+      return updated;
+    });
+  } catch { redirect(`/admin/servicios/${id}/?dependencias=1`); }
   if (s) await audit("ocultar", "servicio", id, s.name);
   revalidatePublicData();
 }
@@ -308,6 +329,10 @@ export async function saveProduct(_prev: FormState, fd: FormData): Promise<FormS
   const d = parsed.data;
   if (d.active === "on" && (!d.price || d.price <= 0))
     return { errors: { price: "Confirma un precio mayor que cero antes de publicar" }, values };
+  if (d.id) {
+    const [current] = await db.select().from(schema.products).where(eq(schema.products.id,d.id)).limit(1);
+    if (!current || current.removed) return { message:"Recupera este producto antes de editarlo.", values };
+  }
 
   const files = fd.getAll("uploads").filter((f): f is File => f instanceof File && f.size > 0);
   const fileError = validateImages(files);
@@ -377,6 +402,56 @@ export async function archiveProduct(fd: FormData) {
   const id = parseId(fd);
   const [p] = await db.update(schema.products).set({ active: false }).where(eq(schema.products.id, id)).returning();
   if (p) await audit("archivar", "producto", id, p.name);
+  revalidatePublicData();
+}
+
+/** Baja recuperable: conserva referencias, stock e historial. */
+export async function removeProduct(fd: FormData) {
+  await requireAdmin();
+  const id = parseId(fd);
+  const [p] = await db.update(schema.products).set({ active:false, featured:false, removed:true }).where(eq(schema.products.id,id)).returning();
+  if (p) await audit("quitar", "producto", id, p.name);
+  revalidatePublicData();
+}
+
+export async function restoreProduct(fd: FormData) {
+  await requireAdmin();
+  const id = parseId(fd);
+  const [p] = await db.update(schema.products).set({ removed:false, active:false }).where(eq(schema.products.id,id)).returning();
+  if (p) await audit("recuperar", "producto", id, p.name);
+  revalidatePublicData();
+}
+
+export async function removeService(fd: FormData) {
+  await requireAdmin();
+  const id = parseId(fd);
+  const result = await db.transaction(async tx => {
+    const rows = await tx.select().from(schema.services).for("update");
+    const s = rows.find(s => s.id === id);
+    if (!s) return null;
+    const parents = rows.filter(p => !p.removed && p.id !== id && p.components.some(c => c.slug === s.slug));
+    if (parents.length) return { blocked:true, name:s.name };
+    await tx.update(schema.services).set({ active:false, featured:false, removed:true }).where(eq(schema.services.id,id));
+    return { blocked:false, name:s.name };
+  });
+  if (result?.blocked) redirect(`/admin/servicios/${id}/?dependencias=1`);
+  if (result) await audit("quitar", "servicio", id, result.name);
+  revalidatePublicData();
+}
+
+export async function restoreService(fd: FormData) {
+  await requireAdmin();
+  const id = parseId(fd);
+  let s;
+  try {
+    s = await db.transaction(async tx=>{
+      const rows = await tx.select().from(schema.services).for("update");
+      validateHierarchy(rows.map(s=>s.id===id?{...s,removed:false,active:false}:s));
+      const [updated] = await tx.update(schema.services).set({ removed:false, active:false }).where(eq(schema.services.id,id)).returning();
+      return updated;
+    });
+  } catch {redirect(`/admin/servicios/${id}/?recuperacion=1`);}
+  if (s) await audit("recuperar", "servicio", id, s.name);
   revalidatePublicData();
 }
 

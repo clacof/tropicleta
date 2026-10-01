@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
-import { hideService } from "@/actions/admin";
+import { removeService, restoreService } from "@/actions/admin";
 import { ConfirmSubmit } from "@/components/admin/ConfirmSubmit";
+import { PacksAdminPanel } from "@/components/admin/PacksAdminPanel";
 import { db, schema } from "@/db";
 import { requireAdmin } from "@/lib/auth";
 import { formatCLP } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Servicios" };
 
-export default async function ServiciosAdmin() {
+export default async function ServiciosAdmin({searchParams}:{searchParams:Promise<{quitados?:string}>}) {
   await requireAdmin();
   const rows = await db
     .select({ s: schema.services, c: schema.serviceCategories })
@@ -17,6 +18,7 @@ export default async function ServiciosAdmin() {
     .innerJoin(schema.serviceCategories, eq(schema.services.categoryId, schema.serviceCategories.id))
     .orderBy(asc(schema.serviceCategories.sort), asc(schema.services.sort));
 
+  const showRemoved = (await searchParams).quitados === "1";
   return (
     <>
       <div className="tp-admin-title">
@@ -25,7 +27,10 @@ export default async function ServiciosAdmin() {
           Nuevo servicio
         </Link>
       </div>
-      <p className="tp-muted tp-small">Los 3 marcados como destacados aparecen en la home. Sin precio = “A cotizar”.</p>
+      <Link className="tp-btn tp-btn-ghost tp-btn-sm" href={showRemoved?"/admin/servicios/":"/admin/servicios/?quitados=1"}>{showRemoved?"Volver al catálogo":"Ver quitados / recuperar"}</Link>
+      <PacksAdminPanel catalog={rows.map(({s})=>s)} showRemoved={showRemoved} />
+      <h2>Servicios individuales</h2>
+      <p className="tp-muted tp-small">Edita servicios, paquetes, vehículos y componentes desde cada ficha. Sin precio = “A cotizar”.</p>
       <div className="tp-table-wrap">
         <table className="tp-table">
           <thead>
@@ -38,10 +43,11 @@ export default async function ServiciosAdmin() {
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ s, c }) => (
+            {rows.filter(({s})=>s.kind !== "package" && s.removed === showRemoved).map(({ s, c }) => (
               <tr key={s.id} style={s.active ? undefined : { opacity: 0.5 }}>
                 <td>
                   <Link href={`/admin/servicios/${s.id}/`}>{s.name}</Link>
+                  {s.kind === "package" && <span className="tp-badge" style={{marginLeft:8}}>Paquete · {s.components.length ? `${s.components.length} componentes` : "Por definir"}</span>}
                   {s.featured && (
                     <span className="tp-badge tp-badge-orange" style={{ marginLeft: 8 }}>
                       Destacado
@@ -50,14 +56,12 @@ export default async function ServiciosAdmin() {
                 </td>
                 <td>{c.name}</td>
                 <td className="num">{s.price ? `${s.priceFrom ? "desde " : ""}${formatCLP(s.price)}` : "A cotizar"}</td>
-                <td>{s.active ? "Activo" : "Oculto"}</td>
+                <td>{s.removed?"Quitado":s.active ? "Activo" : "Oculto"}</td>
                 <td className="num">
-                  {s.active && (
-                    <form action={hideService}>
+                    <form action={s.removed?restoreService:removeService}>
                       <input type="hidden" name="id" value={s.id} />
-                      <ConfirmSubmit message={`¿Ocultar “${s.name}”? Dejará de verse en el sitio.`}>Ocultar</ConfirmSubmit>
+                      <ConfirmSubmit message={s.removed?`¿Recuperar “${s.name}” como borrador?`:`¿Quitar “${s.name}”? Podrás recuperarlo y conservarás el historial.`}>{s.removed?"Recuperar":"Quitar"}</ConfirmSubmit>
                     </form>
-                  )}
                 </td>
               </tr>
             ))}

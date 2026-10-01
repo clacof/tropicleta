@@ -227,6 +227,17 @@
 @media(max-width:979px) and (min-width:701px) { .tp-home-photo-hero .tp-hero-grid { grid-template-columns:minmax(0,37%) 1fr 265px; } }
 @media(max-width:700px) { .tp-home-photo-hero .tp-hero-grid { grid-template-columns:1fr; } }
 
+.tp-quote-heading { font-size:22px; line-height:1.2; margin:16px 0 12px; }
+.tp-package-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.tp-package-option { align-items:flex-start; border:1px solid #ffffff25; padding:16px; }
+.tp-package-option.is-selected { border-color:#ffad32; background:#ffad3210; }
+.tp-package-option strong, .tp-package-option b { display:block; }
+.tp-package-option b { color:#ffad32; margin-block:7px; font-size:21px; }
+.tp-quote-category { margin:18px 0 10px; font-size:15px; line-height:1.4; }
+.tp-package-editor { display:grid; gap:12px; }
+.tp-package-editor > div > .tp-hint { display:block; margin:6px 0 0 12px; }
+@media(max-width:600px) { .tp-package-grid { grid-template-columns:1fr; } }
+
 /* Tarjetas de portada más grandes, con selección dentro de la tarjeta. */
 .tp-home-photo-hero .tp-hero-grid { grid-template-columns:minmax(0,36%) 1fr minmax(280px,390px); }
 .tp-home-photo-hero .tp-single-carousel { width:min(100%,390px); }
@@ -236,3 +247,12 @@
 @media(min-width:701px) and (max-height:760px) { .tp-home-photo-hero .tp-single-carousel { width:min(100%,350px); } }
 @media(max-width:979px) and (min-width:701px) { .tp-home-photo-hero .tp-hero-grid { grid-template-columns:minmax(0,1fr) minmax(280px,340px); gap:24px; } .tp-home-photo-hero .tp-hero-showcase { grid-column:2; } }
 @media(max-width:700px) { .tp-home-photo-hero .tp-hero-grid { grid-template-columns:1fr; } .tp-home-photo-hero .tp-hero-showcase { grid-column:1; } .tp-home-photo-hero .tp-single-carousel { width:min(100%,440px); } }
+.tp-package-option small:first-of-type { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; }
+
+.tp-pack-details{padding:0 1rem 1rem;font-size:.85rem;color:var(--muted)}
+.tp-pack-details summary{cursor:pointer;color:var(--orange)}
+.tp-pack-details ul{padding-left:1.2rem;margin-top:.5rem}
+.tp-package-option>.tp-option{border:0;background:transparent;margin:0}
+
+.tp-inline-confirm{max-width:280px;white-space:normal;text-align:left;padding:10px;border:1px solid #ffad3240;border-radius:8px}
+.tp-inline-confirm p{font-size:12px;margin:0 0 8px}.tp-inline-confirm button+button{margin-left:12px}

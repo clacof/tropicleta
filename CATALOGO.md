@@ -8,6 +8,8 @@ Los iconos de navegador proceden del PNG transparente oficial Recurso 22, corres
 
 También prepara 16 productos como borradores: precio por definir, stock cero y sin publicación. Sus ilustraciones son referenciales. En `/admin/productos/`, revisar la marca, descripción, compatibilidad, imágenes, precio y stock antes de marcar **Publicado**. Se pueden guardar avances sin precio; publicar requiere un precio mayor que cero.
 
+La migración `0008_race_lub_product` añade el sellador Race Lub de 250 ml solicitado para probar el carrito: publicado, $10.000 CLP y stock inicial de 6 unidades. No vuelve a cargar existencias al reiniciar. Su imagen de catálogo está en `public/productos/sellador-race-lub-250-ml.png`, editada con ImageGen a partir del aviso proporcionado. Instrucción de edición: conservar el envase y tubo aplicador sobre fondo gris claro; eliminar textos promocionales, precios, insignias, logos y adornos exteriores.
+
 La carga no sustituye productos, existencias ni servicios ocultos. No crea ventas, clientes ni reservas de ejemplo. Se prueba con `npm run test:catalog` sobre una base de datos temporal.
 
 El catálogo público incluye búsqueda por palabras sin distinguir tildes ni mayúsculas. En la tienda, la búsqueda conserva categoría y ordenamiento. Cuando no hay coincidencias, se puede volver al catálogo o consultar por WhatsApp.

@@ -43,6 +43,41 @@
       "when": 1790798400000,
       "tag": "0005_catalog_corrections",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790802000000,
+      "tag": "0007_package_quotes",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790809200000,
+      "tag": "0008_race_lub_product",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790812800000,
+      "tag": "0009_scooter_corrections",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790816400000,
+      "tag": "0010_manual_service_packs",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790820000000,
+      "tag": "0011_accounting_areas",
+      "breakpoints": true
     }
   ]
 }

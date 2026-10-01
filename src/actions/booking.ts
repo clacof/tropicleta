@@ -9,6 +9,8 @@ import { displayPhone, formatDate, shortCode } from "@/lib/format";
 import { serviceQuote, transportLabels } from "@/lib/service-quote";
 import { formatCLP } from "@/lib/format";
 import { bookingSchema } from "@/lib/validation";
+import { packageQuote, vehicleLabels } from "@/lib/package-quote";
+import { selectionSchema } from "@/lib/quote-selection";
 
 export async function createBooking(_prev: FormState, fd: FormData): Promise<FormState> {
   const values = formToObject(fd);
@@ -19,15 +21,18 @@ export async function createBooking(_prev: FormState, fd: FormData): Promise<For
   let code: string;
   try {
     // Solo se aceptan servicios existentes (se guardan los nombres para el historial)
-    const found = await db
-      .select({ slug: schema.services.slug, name: schema.services.name, price: schema.services.price, priceFrom: schema.services.priceFrom })
-      .from(schema.services)
-      .where(and(inArray(schema.services.slug, d.services), eq(schema.services.active, true)));
-    if (!found.length || found.length !== new Set(d.services).size)
-      return { errors: { services: "Uno de los servicios ya no está disponible. Vuelve a seleccionarlos." }, values };
+    const catalog = await db.select().from(schema.services);
+    let calculation; let selection;
+    try {
+      selection = selectionSchema.parse(d.selection ? JSON.parse(d.selection) : {manual:d.services.filter(slug=>catalog.find(s=>s.slug===slug)?.kind!=="package"),packages:d.services.filter(slug=>catalog.find(s=>s.slug===slug)?.kind==="package"),excluded:[]});
+      calculation = packageQuote(catalog,selection,d.vehicleType,d.doubleSuspension);
+      if (!calculation.leaves.length || calculation.leaves.slice().sort().join("|") !== [...new Set(d.services)].sort().join("|")) throw Error("La selección cambió. Revisa tu cotización antes de enviarla.");
+    } catch(e) { return { errors:{services:e instanceof Error?e.message:"La selección no es válida."}, values }; }
+    const found = calculation.lines;
 
     const quote = serviceQuote(found, d.pickup, d.pickupCommune, d.transportMode, d.firstService);
     const quoteText = found.map(s => s.name + ": " + (s.price === null ? "A cotizar" : (s.priceFrom ? "Desde " : "") + formatCLP(s.price))).join("; ") + "; Subtotal de servicios: " + formatCLP(quote.subtotal) + (d.firstService ? "; Primer servicio, descuento 10% en servicios: -" + formatCLP(quote.discount) : "") + (d.pickup ? "; " + transportLabels[d.transportMode] + ": " + (quote.transport === null ? "A cotizar" : formatCLP(quote.transport)) : "") + "; Total estimado: " + formatCLP(quote.total) + (quote.pending ? "; Valores pendientes de cotizar." : "") + "; Sujeto a diagnóstico y confirmación.";
+    const packageDetail = "Vehículo: " + vehicleLabels[d.vehicleType] + "; " + found.map(s=>s.name + (s.automatic?" (paquete reconocido)":"") + (s.included.length?" · Incluidos: " + s.included.map(slug=>catalog.find(s=>s.slug===slug)!.name).join(", "):"")).join("; ");
     code = shortCode("TP");
     await db.insert(schema.bookings).values({
       code,
@@ -42,7 +47,8 @@ export async function createBooking(_prev: FormState, fd: FormData): Promise<For
       pickup: d.pickup,
       pickupCommune: d.pickup ? d.pickupCommune! : null,
       pickupAddress: d.pickup ? d.pickupAddress! : null,
-      notes: [quoteText, d.notes].filter(Boolean).join("\n"),
+      quoteSnapshot: { vehicle:d.vehicleType, doubleSuspension:d.doubleSuspension, selection, lines:found, ...quote },
+      notes: [packageDetail, quoteText, d.notes].filter(Boolean).join("\n"),
     });
 
     const slot = d.timeSlot === "manana" ? "mañana" : "tarde";
@@ -51,7 +57,7 @@ export async function createBooking(_prev: FormState, fd: FormData): Promise<For
       <p><b>${escapeHtml(d.name)}</b> · ${displayPhone(d.phone)} ${d.email ? "· " + escapeHtml(d.email) : ""}</p>
       <p>${escapeHtml(d.vehicleType)} ${escapeHtml(d.vehicleDetails ?? "")}</p>
       <p>Servicios: ${found.map((s) => escapeHtml(s.name)).join(", ")}</p>
-      <p>${escapeHtml(quoteText)}</p>
+      <p>${escapeHtml(packageDetail)}</p><p>${escapeHtml(quoteText)}</p>
       <p>Fecha preferida: ${formatDate(d.preferredDate)}, en la ${slot}</p>
       ${d.pickup ? `<p>${transportLabels[d.transportMode]} en ${escapeHtml(d.pickupCommune!)}: ${escapeHtml(d.pickupAddress!)}</p>` : ""}
       ${d.notes ? `<p>Notas: ${escapeHtml(d.notes)}</p>` : ""}`;

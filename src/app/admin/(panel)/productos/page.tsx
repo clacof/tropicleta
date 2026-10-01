@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
-import { archiveProduct } from "@/actions/admin";
+import { removeProduct, restoreProduct } from "@/actions/admin";
+
+
 import { ConfirmSubmit } from "@/components/admin/ConfirmSubmit";
 import { db, schema } from "@/db";
 import { requireAdmin } from "@/lib/auth";
@@ -9,13 +11,16 @@ import { formatCLP } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Productos" };
 
-export default async function ProductosAdmin() {
+export default async function ProductosAdmin({searchParams}:{searchParams:Promise<{quitados?:string}>}) {
   await requireAdmin();
   const rows = await db
     .select({ p: schema.products, c: schema.productCategories })
     .from(schema.products)
     .leftJoin(schema.productCategories, eq(schema.products.categoryId, schema.productCategories.id))
     .orderBy(desc(schema.products.active), desc(schema.products.createdAt));
+
+  const showRemoved = (await searchParams).quitados === "1";
+
 
   return (
     <>
@@ -25,6 +30,8 @@ export default async function ProductosAdmin() {
           Nuevo producto
         </Link>
       </div>
+      <Link className="tp-btn tp-btn-ghost tp-btn-sm" href={showRemoved?"/admin/productos/":"/admin/productos/?quitados=1"}>{showRemoved?"Volver al catálogo":"Ver quitados / recuperar"}</Link>
+
       {rows.some(({ p }) => !p.active && p.price === 0) && <div className="tp-draft-note">
         <strong>Productos preparados para completar</strong>
         <p>Las fichas con precio “Por definir” son borradores y no aparecen en la tienda. Abre cada producto, confirma su descripción, precio y stock, y marca “Publicado” cuando esté listo.</p>
@@ -42,7 +49,7 @@ export default async function ProductosAdmin() {
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ p, c }) => (
+            {rows.filter(({p})=>p.removed === showRemoved).map(({ p, c }) => (
               <tr key={p.id} style={p.active ? undefined : { opacity: 0.5 }}>
                 <td>
                   <Link href={`/admin/productos/${p.id}/`}>{p.name}</Link>
@@ -57,18 +64,16 @@ export default async function ProductosAdmin() {
                 <td className="num" style={p.stock === 0 ? { color: "#fca5a5" } : undefined}>
                   {p.stock}
                 </td>
-                <td>{p.active ? "Publicado" : p.price === 0 ? "Borrador" : "Archivado"}</td>
+                <td>{p.removed?"Quitado":p.active ? "Publicado" : p.price === 0 ? "Borrador" : "Archivado"}</td>
                 <td className="num">
-                  {p.active && (
-                    <form action={archiveProduct}>
+                    <form action={p.removed?restoreProduct:removeProduct}>
                       <input type="hidden" name="id" value={p.id} />
-                      <ConfirmSubmit message={`¿Archivar “${p.name}”? Dejará de verse en la tienda.`}>Archivar</ConfirmSubmit>
+                      <ConfirmSubmit message={p.removed?`¿Recuperar “${p.name}” como borrador?`:`¿Quitar “${p.name}”? Podrás recuperarlo y conservarás el historial.`}>{p.removed?"Recuperar":"Quitar"}</ConfirmSubmit>
                     </form>
-                  )}
                 </td>
               </tr>
             ))}
-            {!rows.length && (
+            {!rows.some(({p})=>p.removed === showRemoved) && (
               <tr>
                 <td colSpan={6} className="tp-muted">
                   Aún no hay productos. Crea el primero.

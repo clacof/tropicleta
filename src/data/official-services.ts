@@ -1,5 +1,5 @@
 /** Catálogo confirmado por Tropicleta el 30/09/2026. Importes en CLP. */
-export const excludedServiceSlugs = ["revision-pre-competencia", "cambio-de-cadena", "cambio-transmision-completa", "cambio-de-pastillas", "reparacion-de-pinchazo", "cambio-de-neumatico", "mantencion-de-bujes", "mantencion-scooter", "configuracion-sag", "cambio-de-disco", "liquido-scooter"];
+export const excludedServiceSlugs = ["revision-pre-competencia", "cambio-de-cadena", "cambio-transmision-completa", "cambio-de-pastillas", "reparacion-de-pinchazo", "cambio-de-neumatico", "mantencion-de-bujes", "mantencion-scooter", "configuracion-sag", "cambio-de-disco", "liquido-scooter", "parchado-scooter"];
 export const officialServices = [
   ["mantenciones", "mantencion-completa", "Mantención completa", 50000, "Servicio de todos los ejes, ajuste de frenos y cambios, limpieza de bicicleta y transmisión, y lubricación. No incluye suspensión, sangrado de frenos ni ajustes de horquilla."],
   ["mantenciones", "mantencion-basica", "Mantención básica", 35000, "Mantención básica de tu bicicleta."],
@@ -9,9 +9,9 @@ export const officialServices = [
   ["mantenciones", "armado-bicicleta-nueva", "Armado de bicicleta nueva", 35000, "Armado y ajuste de tu bicicleta nueva."],
   ["mantenciones", "limpieza-bicicleta-transmision", "Limpieza de bicicleta más transmisión", 15000, "Limpieza de bicicleta y transmisión."],
   ["mantenciones", "limpieza-ultrasonica-encerado", "Limpieza ultrasónica más encerado", 35000, "Limpieza ultrasónica y encerado de cadena."],
-  ["frenos", "ajuste-frenos-cambios", "Ajuste de frenos y cambios", 20000, "Ajuste de frenos y cambios de tu bicicleta."],
-  ["frenos", "ajuste-frenos-mecanicos", "Ajuste de frenos mecánicos o hidráulicos", 7000, "Incluye cambio o rectificación de disco cuando corresponda; no se ofrece como servicio separado."],
-  ["frenos", "purga-frenos-hidraulicos", "Purga de frenos", 15000, "Purga de frenos."],
+  ["frenos", "ajuste-frenos-cambios", "Ajuste de frenos y cambios", 25000, "Ajuste de frenos y cambios de tu bicicleta."],
+  ["frenos", "ajuste-frenos-mecanicos", "Ajuste de freno delantero", 7000, "Incluye cambio o rectificación de disco cuando corresponda; no se ofrece como servicio separado."],
+  ["frenos", "purga-frenos-hidraulicos", "Purga o sangrado de freno delantero", 15000, "Purga de frenos."],
   ["frenos", "ajuste-de-cambios", "Sincronización de cambios", 15000, "Sincronización de cambios, ajuste de cableado y rectificación de postiza."],
   ["frenos", "servicio-pata-de-cambio", "Servicio de pata de cambio", 15000, "Desarme, limpieza y lubricación de pata de cambio y rectificación de postiza."],
   ["suspensiones", "servicio-basico-horquilla", "Servicio de botellas", 35000, "Limpieza, cambio de sellos y aceite."],
@@ -27,8 +27,7 @@ export const officialServices = [
   ["ejes", "servicio-nucleo", "Servicio de núcleo", 10000, "Servicio de núcleo."],
   ["ejes", "mantencion-de-centro", "Servicio de motor", 10000, "Servicio de motor."],
   ["ejes", "mantencion-de-direccion", "Servicio de eje de dirección", 10000, "Servicio del eje de dirección."],
-  ["scooters", "parchado-scooter", "Parchados de scooter", null, "Parchados de scooter."],
-  ["scooters", "pinchazo-scooter", "Cambio de cámara de scooter", null, "Cambio de cámara de scooter."],
+  ["scooters", "pinchazo-scooter", "Cambio de cámara de scooter", 10000, "Cambio de cámara de scooter."],
   ["scooters", "frenos-scooter", "Ajuste de frenos de scooter", 7000, "Ajuste de frenos de scooter."],
   ["retiro-entrega", "retiro-y-entrega", "Retiro y entrega de bicicletas", 3000, "Tierra Amarilla: solo retiro o entrega $3.000, ambos $5.000. Paipote: solo retiro o entrega $8.000, ambos $15.000. Copiapó: solo retiro o entrega $12.000, ambos $20.000. Coordinación previa; consulta por otras zonas."],
 ] as const;

@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { addCashEntry, voidCashEntry } from "@/actions/accounting";
 import { SubmitButton } from "@/components/SubmitButton";
-import { categories, methods } from "@/lib/accounting-validation";
+import { categories, methods, accountingAreas } from "@/lib/accounting-validation";
 
 export function AccountingForm({ today, requestId }: { today: string; requestId: string }) {
   const [state, action] = useActionState(addCashEntry, {});
@@ -20,6 +20,7 @@ export function AccountingForm({ today, requestId }: { today: string; requestId:
     <form ref={ref} action={action} className="tp-form">
       <input type="hidden" name="requestId" value={key} />
       <div className="tp-accounting-fields">
+        <label>Área<select className="tp-input" name="area" defaultValue="general">{Object.entries(accountingAreas).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
         <label>
           Tipo
           <select className="tp-input" name="type">
