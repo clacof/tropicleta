@@ -18,7 +18,7 @@ async function main() {
     await migrate(db, { migrationsFolder: "./drizzle" });
     const first = await completeCatalog(db as unknown as DB);
     assert.equal(first.services, 0);
-    assert.equal(first.drafts, seedProducts.length);
+    assert.equal(first.drafts, 0);
     const services = await db.select().from(schema.services);
     const categories = await db.select().from(schema.serviceCategories);
     const active = services.filter(s => s.active);
@@ -53,6 +53,9 @@ async function main() {
     assert.equal(product.stock, 7);
     assert.equal(product.price, 8900);
     assert.equal(product.active, true);
+    await db.delete(schema.products).where(eq(schema.products.id,product.id));
+    await completeCatalog(db as unknown as DB);
+    assert.equal((await db.select().from(schema.products).where(eq(schema.products.slug,product.slug))).length,0,"No recrear productos eliminados al publicar");
     await db.update(schema.services).set({slug:"camara-scooter-editada",name:"Cambio de cámara de scooter"}).where(eq(schema.services.slug,"pinchazo-scooter"));
     await completeCatalog(db as unknown as DB);
     assert.equal((await db.select().from(schema.services).where(eq(schema.services.slug,"pinchazo-scooter"))).length,0,"No recrear la URL ni el nombre antiguo tras editar el servicio");

@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 const groups = [
-  {label:"Tienda",links:[{href:"/admin/productos/",label:"Productos"},{href:"/admin/ordenes/",label:"Órdenes de productos"},{href:"/admin/productos/categorias/",label:"Categorías"}]},
-  {label:"Taller",links:[{href:"/admin/servicios/",label:"Servicios"},{href:"/admin/reservas/",label:"Reservas"},{href:"/admin/servicios/categorias/",label:"Categorías"}]},
+  {label:"Tienda",links:[{href:"/admin/productos/",label:"Productos"},{href:"/admin/ordenes/",label:"Órdenes de productos"},{href:"/admin/productos/categorias/",label:"Categorías"},{href:"/admin/productos/papelera/",label:"Papelera de productos"}]},
+  {label:"Taller",links:[{href:"/admin/servicios/",label:"Servicios"},{href:"/admin/reservas/",label:"Reservas"},{href:"/admin/servicios/categorias/",label:"Categorías"},{href:"/admin/servicios/papelera/",label:"Papelera de servicios"}]},
 ];
 const general=[{href:"/admin/",label:"Resumen"},{href:"/admin/contabilidad/",label:"Contabilidad"}];
 const other=[{href:"/admin/mensajes/",label:"Mensajes"},{href:"/admin/actividad/",label:"Actividad"}];

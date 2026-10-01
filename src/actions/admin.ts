@@ -431,6 +431,24 @@ export async function restoreProduct(fd: FormData) {
   revalidatePublicData();
 }
 
+export async function deleteProductPermanently(fd: FormData) {
+  await requireAdmin();
+  const id=parseId(fd);
+  const result=await db.transaction(async tx=>{
+    const [product]=await tx.select().from(schema.products).where(eq(schema.products.id,id)).for("update");
+    if (!product) return null;
+    const [used]=await tx.select({id:schema.orderItems.id}).from(schema.orderItems).where(eq(schema.orderItems.productId,id)).limit(1);
+    if (!product.removed || used) return {blocked:true,name:product.name};
+    await tx.delete(schema.products).where(and(eq(schema.products.id,id),eq(schema.products.removed,true)));
+    return {blocked:false,name:product.name};
+  });
+  if (result?.blocked) redirect("/admin/productos/papelera/?bloqueado=1");
+  if (result) await audit("eliminar definitivamente","producto",id,result.name);
+  revalidatePublicData();
+  revalidatePath("/admin/productos","layout");
+  redirect("/admin/productos/papelera/?eliminado=1");
+}
+
 export async function removeService(fd: FormData) {
   await requireAdmin();
   const id = parseId(fd);

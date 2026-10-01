@@ -32,7 +32,7 @@ export default async function ServiciosAdmin({searchParams}:{searchParams:Promis
         </Link>
       </div>
       {params.guardado==="1"&&<p className="tp-alert" role="status">Servicio guardado. El listado ya muestra los nombres y precios actualizados.</p>}
-      <Link className="tp-btn tp-btn-ghost tp-btn-sm" href={showRemoved?"/admin/servicios/":"/admin/servicios/?quitados=1"}>{showRemoved?"Volver al catálogo":`Papelera (${rows.filter(({s})=>s.removed).length})`}</Link>
+      <Link className="tp-btn tp-btn-secondary tp-btn-sm" href={showRemoved?"/admin/servicios/":"/admin/servicios/papelera/"}>{showRemoved?"Volver al catálogo":`Papelera de servicios (${rows.filter(({s})=>s.removed).length})`}</Link>
       {showRemoved&&<p className="tp-hint">Los servicios quitados conservan su URL. Eliminarlos definitivamente libera esa URL y no se puede deshacer. Puedes recuperarlos como borrador.</p>}
       {params.eliminado==="1"&&<p className="tp-alert" role="status">Servicio eliminado definitivamente. Su URL ya está disponible.</p>}
       {blockReason&&<p className="tp-alert" role="alert">No se puede eliminar “{blockedService?.name}”: {blockReason}</p>}
@@ -53,7 +53,7 @@ export default async function ServiciosAdmin({searchParams}:{searchParams:Promis
           </thead>
           <tbody>
             {rows.filter(({s})=>s.kind !== "package" && s.removed === showRemoved).map(({ s, c }) => (
-              <tr key={s.id} style={s.active ? undefined : { opacity: 0.5 }}>
+              <tr key={s.id} style={s.active || s.removed ? undefined : { opacity: 0.5 }}>
                 <td>
                   <Link href={`/admin/servicios/${s.id}/`}>{s.name}</Link>
                   {showRemoved&&<small style={{display:"block"}}>URL: {s.slug}</small>}

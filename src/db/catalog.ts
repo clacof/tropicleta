@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import type { DB } from "./client";
 import * as schema from "./schema";
-import { seedProductCategories, seedProducts, seedServiceCategories, seedServices } from "./seed-data";
+import { seedProductCategories, seedServiceCategories, seedServices } from "./seed-data";
 import { fallbackFeatured } from "../data/services-fallback";
 import { excludedServiceSlugs } from "../data/official-services";
 
@@ -35,14 +35,7 @@ export async function completeCatalog(db: DB) {
       }).where(sql`${schema.services.slug} = ${service.slug}`);
     }
     await tx.insert(schema.productCategories).values(seedProductCategories.map((c, sort) => ({ ...c, sort }))).onConflictDoNothing();
-    const productCategories = await tx.select().from(schema.productCategories);
-    const addedProducts = await tx.insert(schema.products).values(seedProducts.map((p) => ({
-      slug: p.slug, name: p.name,
-      categoryId: productCategories.find((c) => c.slug === p.cat)!.id,
-      price: 0, stock: 0, active: false, featured: false,
-      images: [`/productos/${p.slug}.svg`],
-      description: "Ficha en preparación. Confirmar marca, medidas, compatibilidad, precio y disponibilidad antes de publicar. La ilustración es referencial.",
-    }))).onConflictDoNothing().returning({ id: schema.products.id });
-    return { services: addedServices.length, drafts: addedProducts.length };
+    // Product drafts are managed in Admin. Never recreate a deleted product on deploy.
+    return { services: addedServices.length, drafts: 0 };
   });
 }
