@@ -281,3 +281,21 @@
 .tp-vehicle-tabs, .tp-vehicle-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
 .tp-vehicle-summary { padding: 12px 0; border-bottom: 1px solid var(--tp-border); }
 .tp-vehicle-summary h3 { font-size: 16px; margin: 0 0 8px; }
+
+/* Pie compacto: contacto visible, información secundaria desplegable. */
+.tp-footer.tp-footer-compact { padding:24px 0 14px; }
+.tp-footer-main { display:grid; grid-template-columns:250px minmax(220px,1fr) minmax(210px,1fr); gap:28px; align-items:start; }
+.tp-footer-compact .tp-brand-stacked .tp-brand-mascot { width:64px; }
+.tp-footer-compact .tp-footer-wordmark { width:128px; }
+.tp-footer-compact .tp-footer-tagline { font-size:11px; }
+.tp-footer-compact .tp-socials { margin-top:10px; gap:8px; }
+.tp-footer-compact .tp-socials a { width:36px; height:36px; }
+.tp-footer-contact { display:grid; gap:7px; font-size:13px; line-height:1.5; }
+.tp-footer-whatsapp { color:#fff; font-weight:700; }
+.tp-footer-primary-links { display:flex; flex-wrap:wrap; gap:8px 16px; font-size:13px; }
+.tp-footer-help { margin-top:12px; font-size:13px; }
+.tp-footer-help summary { cursor:pointer; color:#ffad32; padding:6px 0; }
+.tp-footer-help ul { grid-template-columns:1fr 1fr; gap:8px 12px; margin-top:10px; font-size:12px; }
+.tp-footer-compact .tp-footer-bottom { margin-top:16px; padding-top:12px; gap:8px 16px; }
+@media(max-width:979px) { .tp-footer-main { grid-template-columns:210px 1fr; gap:20px; } .tp-footer-navigation { grid-column:1/-1; } }
+@media(max-width:599px) { .tp-footer-main { grid-template-columns:1fr; gap:16px; } .tp-footer-compact .tp-footer-brand { display:flex; align-items:center; justify-content:space-between; gap:12px; } .tp-footer-compact .tp-brand-stacked .tp-brand-mascot { width:48px; } .tp-footer-compact .tp-footer-wordmark { width:100px; } .tp-footer-compact .tp-footer-tagline { font-size:9px; } .tp-footer-compact .tp-socials { display:grid; grid-template-columns:repeat(2,36px); margin:0; gap:5px; } .tp-footer-contact { gap:5px; } .tp-footer-compact .tp-footer-bottom { font-size:11px; } }

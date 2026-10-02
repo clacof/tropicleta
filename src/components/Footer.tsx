@@ -6,79 +6,23 @@ import { SocialIcon } from "./SocialIcon";
 
 export function Footer() {
   const year = new Date().getFullYear();
-
-  return (
-    <footer className="tp-footer">
-      <div className="tp-shell">
-        <div className="tp-footer-grid">
-          <div className="tp-footer-brand">
-            <Link href="/" className="tp-footer-logo" aria-label="Tropicleta, ir al inicio">
-              <BrandLogo stacked />
-            </Link>
-            <p>
-              Taller de bicicletas y scooters eléctricos en Tierra Amarilla. Atención con coordinación previa y retiro y
-              entrega en Tierra Amarilla, Paipote y Copiapó.
-            </p>
-            <div className="tp-socials">
-              {site.socials.map((s) => (
-                <a key={s.name} href={s.href} target="_blank" rel="noopener" aria-label={s.name}>
-                  <SocialIcon name={s.name} />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2>Taller</h2>
-            <ul>
-              {footerLinks.taller.map((l) => (
-                <li key={l.href}>
-                  <Link href={l.href}>{l.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h2>Ayuda</h2>
-            <ul>
-              {footerLinks.ayuda.map((l) => (
-                <li key={l.href}>
-                  <Link href={l.href}>{l.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h2>Contacto</h2>
-            <ul>
-              <li>
-                <a href={WA_CONSULTAR} target="_blank" rel="noopener">
-                  WhatsApp {site.whatsappDisplay}
-                </a>
-              </li>
-              <li>
-                <a href={`mailto:${site.email}`}>{site.email}</a>
-              </li>
-              <li>{site.address}</li>
-              {site.hours.slice(0, 2).map((h) => (
-                <li key={h.days}>
-                  {h.days}: {h.time}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="tp-footer-bottom">
-          <Link href="/admin/">Administración</Link>
-          <span>
-            © {year} {site.domain}
-          </span>
-          <span>Diagnóstico gratuito · Garantía 2 semanas · Pagos con Webpay y Mercado Pago</span>
-        </div>
+  return <footer className="tp-footer tp-footer-compact"><div className="tp-shell">
+    <div className="tp-footer-main">
+      <div className="tp-footer-brand">
+        <Link href="/" className="tp-footer-logo" aria-label="Tropicleta, ir al inicio"><BrandLogo stacked /></Link>
+        <div className="tp-socials">{site.socials.map(s => <a key={s.name} href={s.href} target="_blank" rel="noopener" aria-label={s.name}><SocialIcon name={s.name} /></a>)}</div>
       </div>
-    </footer>
-  );
+      <div className="tp-footer-contact">
+        <a className="tp-footer-whatsapp" href={WA_CONSULTAR} target="_blank" rel="noopener">WhatsApp {site.whatsappDisplay}</a>
+        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.address + ", Atacama, Chile")}`} target="_blank" rel="noopener">{site.address} ↗</a>
+        <span>Atención con coordinación previa</span>
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+      </div>
+      <nav className="tp-footer-navigation" aria-label="Enlaces del pie de página">
+        <div className="tp-footer-primary-links"><Link href="/servicios/">Servicios y cotización</Link><Link href="/tienda/">Tienda</Link><Link href="/eventos/">Taller móvil</Link></div>
+        <details className="tp-footer-help"><summary>Ayuda y más información</summary><ul>{[...footerLinks.taller.filter(l => !["/servicios/", "/eventos/"].includes(l.href)), ...footerLinks.ayuda].map(l => <li key={l.href}><Link href={l.href}>{l.label}</Link></li>)}</ul></details>
+      </nav>
+    </div>
+    <div className="tp-footer-bottom"><span>© {year} {site.domain}</span><span>Diagnóstico gratuito · Garantía 2 semanas</span><Link href="/admin/">Administración</Link></div>
+  </div></footer>;
 }
