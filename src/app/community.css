@@ -231,6 +231,8 @@
 .tp-package-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
 .tp-package-option { align-items:flex-start; border:1px solid #ffffff25; border-radius:12px; padding:16px; }
 .tp-package-option.is-selected { border-color:#ffad32; background:#ffad3210; }
+.tp-package-option.is-included { border-style:dashed; background:#ffffff04; }
+.tp-package-option .tp-pack-inclusion { display:block; color:#ffad32; margin-block:8px; -webkit-line-clamp:unset; }
 .tp-package-option strong, .tp-package-option b { display:block; }
 .tp-package-option b { color:#ffad32; margin-block:7px; font-size:21px; }
 .tp-quote-category { margin:18px 0 10px; font-size:15px; line-height:1.4; }

@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { eq } from "drizzle-orm";
 import * as schema from "../src/db/schema";
-import { packageQuote, packageLeaves, selectedLeaves, toggleSelection, validateHierarchy, emptySelection, type PackageService, type Selection } from "../src/lib/package-quote";
+import { coveringPackage, packageQuote, packageLeaves, selectedLeaves, toggleSelection, validateHierarchy, emptySelection, type PackageService, type Selection } from "../src/lib/package-quote";
 import { serviceQuote } from "../src/lib/service-quote";
 import { packageReference } from "../src/lib/package-reference";
 const individual=(slug:string,price:number|null=10000):PackageService=>({slug,name:slug,price,priceFrom:false,kind:"individual",components:[],vehicles:["bicicleta"],individuallySelectable:true,active:true});
@@ -29,6 +29,13 @@ const total=(selection:Selection,rows=catalog)=>serviceQuote(quote(selection,row
 let basic=toggleSelection(catalog,emptySelection,"basic");
 assert.deepEqual(selectedLeaves(catalog,basic),["a","b"]); // 1
 let complete=toggleSelection(catalog,emptySelection,"complete");
+assert.equal(coveringPackage(catalog,complete,"basic")?.slug,"complete");
+assert.equal(coveringPackage(catalog,basic,"complete"),undefined);
+assert.equal(coveringPackage(catalog,emptySelection,"basic"),undefined);
+assert.equal(coveringPackage(catalog,toggleSelection(catalog,complete,"complete"),"basic"),undefined);
+assert.equal(coveringPackage(catalog,toggleSelection(catalog,complete,"b"),"basic"),undefined);
+const nestedSame=[individual("a"),pack("inner",10000,["a"]),pack("outer",10000,["inner"])];
+assert.equal(coveringPackage(nestedSame,{manual:[],packages:["outer"],excluded:[]},"inner")?.slug,"outer");
 assert.deepEqual(selectedLeaves(catalog,complete),["a","b","c"]); // 2
 const manual:Selection={manual:["a","b"],packages:[],excluded:[]};
 assert.deepEqual(quote(manual).lines.map(s=>s.slug),["basic"]); // 3

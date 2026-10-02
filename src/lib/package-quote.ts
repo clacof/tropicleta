@@ -54,6 +54,24 @@ export function packageLeaves(catalog: PackageService[], slug: string, requiredO
 export function selectedLeaves(catalog: PackageService[], selection: Selection) {
   return [...new Set([...selection.manual, ...selection.packages.flatMap(slug => packageLeaves(catalog, slug))])].filter(slug => !selection.excluded.includes(slug)).sort();
 }
+/** A covered pack is an inclusion, rather than another selectable purchase. */
+export function coveringPackage(catalog: PackageService[], selection: Selection, slug: string) {
+  const service = catalog.find(s => s.slug === slug);
+  if (!service?.components.length) return undefined;
+  const required = packageLeaves(catalog, slug, true);
+  const leaves = selectedLeaves(catalog, selection);
+  if (!required.every(key => leaves.includes(key))) return undefined;
+  return selection.packages.map(key => catalog.find(s => s.slug === key)).find(parent => {
+    if (!parent || parent.slug === slug || !parent.components.length) return false;
+    const parentLeaves = packageLeaves(catalog, parent.slug);
+    const contains = (key: string, seen = new Set<string>()): boolean => {
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return catalog.find(s => s.slug === key)?.components.some(c => c.slug === slug || contains(c.slug, seen)) ?? false;
+    };
+    return (contains(parent.slug) || parentLeaves.length > packageLeaves(catalog, slug).length) && required.every(key => parentLeaves.includes(key));
+  });
+}
 export function toggleSelection(catalog: PackageService[], selection: Selection, slug: string): Selection {
   const service = catalog.find(s => s.slug === slug); if (!service) return selection;
   if (service.kind === "package") {
