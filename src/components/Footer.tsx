@@ -23,6 +23,6 @@ export function Footer() {
         <details className="tp-footer-help"><summary>Ayuda y más información</summary><ul>{[...footerLinks.taller.filter(l => !["/servicios/", "/eventos/"].includes(l.href)), ...footerLinks.ayuda].map(l => <li key={l.href}><Link href={l.href}>{l.label}</Link></li>)}</ul></details>
       </nav>
     </div>
-    <div className="tp-footer-bottom"><span>© {year} {site.domain}</span><span>Diagnóstico gratuito · Garantía 2 semanas</span><Link href="/admin/">Administración</Link></div>
+    <div className="tp-footer-bottom"><span>© {year} {site.domain}</span><span>Diagnóstico gratuito · Garantía 2 semanas</span></div>
   </div></footer>;
 }
