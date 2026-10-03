@@ -6,7 +6,8 @@ export const site = {
   name: "Tropicleta",
   domain: "tropicleta.com",
   location: "Tierra Amarilla · Región de Atacama",
-  addressNote: "Junto al Skatepark Luis Uribe, Tierra Amarilla. Atención con coordinación previa.",
+  address: "Carlos Condell 105, Tierra Amarilla",
+  addressNote: "Carlos Condell 105, Tierra Amarilla. Atención con coordinación previa.",
   whatsappNumber: "56976614443",
   whatsappDisplay: "+56 9 7661 4443",
   coverage: ["Tierra Amarilla", "Paipote", "Copiapó"],
@@ -17,21 +18,23 @@ export const site = {
   ],
   socials: [
     { name: "Instagram", href: "https://instagram.com/tropicleta" },
+    { name: "Facebook", href: "https://www.facebook.com/tropicleta" },
+    { name: "TikTok", href: "https://www.tiktok.com/@tropicleta" },
+    { name: "YouTube", href: "https://www.youtube.com/@tropicleta" },
   ],
 } as const;
 
 export const nav = [
-  { href: "/servicios/", label: "Servicios" },
-  { href: "/agendar/", label: "Agendar" },
+  { href: "/servicios/", label: "Servicios y cotización" },
   { href: "/tienda/", label: "Tienda" },
+  { href: "/eventos/", label: "Taller móvil" },
   { href: "/nosotros/", label: "Nosotros" },
   { href: "/contacto/", label: "Contacto" },
 ] as const;
 
 export const footerLinks = {
   taller: [
-    { href: "/servicios/", label: "Servicios" },
-    { href: "/agendar/", label: "Solicitar hora" },
+    { href: "/servicios/", label: "Servicios y cotización" },
     { href: "/eventos/", label: "Taller móvil para eventos" },
     { href: "/consejos/", label: "Consejos" },
     { href: "/nosotros/", label: "Nosotros" },

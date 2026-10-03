@@ -1,0 +1,24 @@
+import assert from "node:assert/strict";
+import { multiVehicleQuote,quantityPackageQuote,setSelectionQuantity,vehicleQuotesSchema } from "../src/lib/multi-quote";
+import { emptySelection,type PackageService } from "../src/lib/package-quote";
+import { serviceQuote } from "../src/lib/service-quote";
+const item=(slug:string):PackageService=>({slug,name:slug,price:10000,priceFrom:false,kind:"individual",components:[],vehicles:["bicicleta"],active:true,individuallySelectable:true});
+const catalog=[item("delantera"),item("trasera"),{...item("pack"),price:15000,kind:"package",components:[{slug:"delantera",required:true},{slug:"trasera",required:true}]}];
+const selected=setSelectionQuantity(catalog,emptySelection,"delantera",1);
+assert.equal(serviceQuote(quantityPackageQuote(catalog,selected,"bicicleta").lines).subtotal,10000);
+assert.equal(serviceQuote(quantityPackageQuote(catalog,setSelectionQuantity(catalog,selected,"delantera",0),"bicicleta").lines).subtotal,0);
+assert.deepEqual(setSelectionQuantity(catalog,selected,"delantera",2),selected);
+assert.throws(()=>quantityPackageQuote(catalog,{...selected,quantities:{delantera:2}},"bicicleta"));
+const both={manual:["delantera","trasera"],packages:[],excluded:[]};
+assert.equal(serviceQuote(quantityPackageQuote(catalog,both,"bicicleta").lines).subtotal,15000);
+const vehicles=[{slug:"bicicleta",name:"Bicicleta"}];
+const requests=[{id:"1",vehicle:"bicicleta",details:"MTB",selection:selected},{id:"2",vehicle:"bicicleta",details:"Ruta",selection:{manual:["trasera"],packages:[],excluded:[]}}];
+const groups=multiVehicleQuote(catalog,requests,vehicles);
+assert.equal(serviceQuote(groups.flatMap(g=>g.calculation.lines)).subtotal,20000); // Packs never combine work across vehicles.
+const combined=serviceQuote(groups.flatMap(g=>g.calculation.lines),true,"Tierra Amarilla","both",true);
+assert.equal(combined.discount,2000);assert.equal(combined.total,23000);
+assert.deepEqual(vehicleQuotesSchema.parse(JSON.parse(JSON.stringify(requests))),requests);
+assert.throws(()=>multiVehicleQuote(catalog,[requests[0],requests[0]],vehicles));
+assert.throws(()=>multiVehicleQuote(catalog,[{...requests[0],vehicle:"removed"}],vehicles));
+assert.throws(()=>vehicleQuotesSchema.parse(Array.from({length:11},(_,i)=>({...requests[0],id:String(i)}))));
+console.log("Delantera y trasera por separado, una unidad por servicio, varios vehículos y packs sin cruces verificados.");

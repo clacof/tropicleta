@@ -1,0 +1,47 @@
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+const slides = [
+  { number: 1, title: "Servicios generales", href: "/servicios/#mantenciones" },
+  { number: 4, title: "Retiro y entrega", href: "/servicios/" },
+  { number: 8, title: "Scooters eléctricos", href: "/servicios/?vehiculo=scooter#scooters" },
+  { number: 2, title: "Ruedas y tubeless", href: "/servicios/#ruedas" },
+  { number: 3, title: "Suspensiones", href: "/servicios/#suspensiones" },
+  { number: 5, title: "Ejes y rodamientos", href: "/servicios/#ejes" },
+  { number: 6, title: "Transmisión", href: "/servicios/#frenos" },
+];
+export function ServiceCarousel() {
+  const [index, setIndex] = useState(0);
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const swiped = useRef(false);
+  const [interacting, setInteracting] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const go = (direction: number) => setIndex(current => (current + direction + slides.length) % slides.length);
+  useEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(preference.matches);
+    update(); preference.addEventListener("change", update);
+    return () => preference.removeEventListener("change", update);
+  }, []);
+  useEffect(() => {
+    if (interacting || reducedMotion) return;
+    const timer = window.setInterval(() => { if (!document.hidden) setIndex(current => (current + 1) % slides.length); }, 6500);
+    return () => window.clearInterval(timer);
+  }, [interacting, reducedMotion, index]);
+  return <section className="tp-single-carousel" aria-label="Catálogo de servicios" aria-roledescription="carrusel"
+    onMouseEnter={() => setInteracting(true)} onMouseLeave={() => setInteracting(false)}
+    onFocusCapture={() => setInteracting(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setInteracting(false); }}
+    onKeyDown={event => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); go(event.key === "ArrowRight" ? 1 : -1); } }}>
+    <div id="service-carousel" style={{ touchAction: "pan-y" }}
+      onTouchStart={event => { const point = event.touches[0]; touch.current = { x: point.clientX, y: point.clientY }; swiped.current = false; setInteracting(true); }}
+      onTouchEnd={event => { const start = touch.current; const end = event.changedTouches[0]; if (start && Math.abs(end.clientX - start.x) > 45 && Math.abs(end.clientX - start.x) > Math.abs(end.clientY - start.y)) { go(end.clientX < start.x ? 1 : -1); swiped.current = true; } touch.current = null; setInteracting(false); }}
+      onTouchCancel={() => { touch.current = null; setInteracting(false); }}
+      onClickCapture={event => { if (swiped.current) { event.preventDefault(); event.stopPropagation(); swiped.current = false; } }}>
+      {slides.map((slide, position) => <article key={slide.number} hidden={position !== index} className="tp-single-card" aria-label={position + 1 + " de " + slides.length + ": " + slide.title} aria-roledescription="lámina">
+        <Link href={slide.href} className="tp-poster-crop" aria-label={"Ver " + slide.title}><Image src={slide.number === 4 ? "/catalogo/compacto/retiro-entrega.png" : slide.number === 1 ? "/catalogo/compacto/servicios-generales.jpg" : "/catalogo/compacto/" + slide.number + ".jpg"} alt={"Catálogo Tropicleta: " + slide.title} fill sizes="(max-width: 700px) 92vw, (max-width: 979px) 340px, 390px" loading={position === index ? "eager" : "lazy"} /></Link>
+        <div className="tp-single-caption"><div className="tp-carousel-dots" aria-label="Elegir servicio">{slides.map((slide, position) => <button key={slide.number} type="button" onClick={() => setIndex(position)} aria-label={`Ver ${slide.title}`} aria-current={index === position ? "true" : undefined} aria-controls="service-carousel"><span /></button>)}</div><Link className="tp-btn tp-btn-primary" href={slide.href}>Ir a servicios y cotización →</Link></div>
+      </article>)}
+    </div>
+  </section>;
+}

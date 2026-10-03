@@ -1,53 +1,38 @@
+import type { Metadata } from "next";
+import { siteUrl } from "@/lib/site-url";
 import Link from "next/link";
-import { CatalogIcon } from "@/components/CatalogIcon";
-import { formatCLP } from "@/lib/format";
-import { getFeaturedProducts, getHomeServices } from "@/lib/queries";
+import Image from "next/image";
+import { ServiceCarousel } from "@/components/ServiceCarousel";
+import { getFeaturedProducts } from "@/lib/queries";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { site } from "@/data/site";
 import { WA_CONSULTAR, WA_COORDINAR } from "@/lib/whatsapp";
 import { WorkshopGallery } from "@/components/WorkshopGallery";
 import { AnimatedEmblem } from "@/components/AnimatedEmblem";
 
-const localBusinessJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "BicycleStore",
-  name: "Tropicleta",
-  url: "https://tropicleta.com",
-  logo: "https://tropicleta.com/brand/tropicleta-emblema.jpeg",
-  telephone: "+" + site.whatsappNumber,
-  areaServed: site.coverage,
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Tierra Amarilla",
-    addressRegion: "Atacama",
-    addressCountry: "CL",
-  },
+export const metadata: Metadata = {
+ title: { absolute: "Taller de bicicletas en Tierra Amarilla y Copiapó | Tropicleta" },
+ description: "Taller en Carlos Condell 105, Tierra Amarilla. Mantención y reparación de bicicletas, retiro y entrega en Copiapó y Paipote. Cotiza online.",
+ alternates: { canonical: siteUrl("/") },
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [{ featured: featuredServices, categories }, featuredProducts] = await Promise.all([
-    getHomeServices(),
-    getFeaturedProducts(4),
-  ]);
+  const featuredProducts = await getFeaturedProducts(4);
 
   return (
     <div className="tp-home">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
-      />
-
       {/* ================= HERO ================= */}
-      <section className="tp-hero" aria-labelledby="tp-main-title">
+      <section className="tp-hero tp-home-photo-hero" aria-labelledby="tp-main-title">
+        <Image className="tp-hero-background" src="/taller/equipo-tropicleta.jpeg" alt="El equipo Tropicleta junto a su furgón en Atacama" fill sizes="100vw" preload />
         <div className="tp-shell">
           <div className="tp-hero-grid">
             <div>
-              <div className="tp-location">
+              <div className="tp-hero-intro-brand"><AnimatedEmblem /><div className="tp-location">
                 <span className="tp-location-dot" />
                 {site.location}
-              </div>
+              </div></div>
 
               <h1 id="tp-main-title" className="tp-display">
                 Taller de bicicletas <span>hecho para rodar.</span>
@@ -66,86 +51,31 @@ export default async function HomePage() {
                   rel="noopener"
                   aria-label="Coordinar servicio con Tropicleta por WhatsApp"
                 >
-                  Coordinar por WhatsApp
+                  WhatsApp
                 </a>
                 <Link className="tp-btn tp-btn-secondary" href="/servicios/">
-                  Ver servicios
+                  Cotizar servicios
                 </Link>
                 <Link className="tp-btn tp-btn-secondary" href="/tienda/">
-                  Ir a la tienda
+                  Tienda
                 </Link>
               </div>
             </div>
 
-            <div className="tp-hero-brand">
-              <AnimatedEmblem />
-            </div>
-            <aside className="tp-trust tp-hero-trust" aria-label="Información de atención Tropicleta">
-              <div className="tp-trust-item">
-                <div className="tp-trust-label">Diagnóstico</div>
-                <div className="tp-trust-value">Gratuito</div>
-              </div>
-              <div className="tp-trust-item">
-                <div className="tp-trust-label">Garantía</div>
-                <div className="tp-trust-value">2 semanas</div>
-              </div>
-              <div className="tp-trust-item">
-                <div className="tp-trust-label">Atención</div>
-                <div className="tp-trust-value">Coordinación previa</div>
-              </div>
-            </aside>
+            <div className="tp-hero-showcase"><ServiceCarousel /></div>
           </div>
         </div>
       </section>
 
-      {/* ================= SERVICIOS DESTACADOS ================= */}
-      <section className="tp-section">
-        <div className="tp-shell">
-          <span className="tp-kicker">Taller Tropicleta</span>
-          <h2 className="tp-display tp-section-title">Servicios destacados</h2>
-          <p className="tp-section-intro">
-            Una selección de nuestros servicios. Puedes revisar el catálogo completo antes de coordinar tu atención.
-          </p>
-
-          <div className="tp-service-grid">
-            {featuredServices.map((s, i) => (
-              <Link key={s.slug} className="tp-service-card" href={`/servicios/${s.slug}/`}>
-                <div>
-                  <div className="tp-service-number">
-                    {String(i + 1).padStart(2, "0")} / {s.categoryName.toUpperCase()}
-                  </div>
-                  <h3 className="tp-display tp-service-name">{s.name}</h3>
-                </div>
-                <div>
-                  <div className="tp-price">{s.price ? formatCLP(s.price) : "A cotizar"}</div>
-                  <div className="tp-service-link">Ver detalles →</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* CATEGORÍAS */}
-          <div className="tp-category-wrap">
-            <h3 className="tp-display tp-category-heading">Explora el catálogo</h3>
-            <div className="tp-category-grid">
-              {categories.map((c) => (
-                <Link key={c.slug} className="tp-category" href={`/servicios/#${c.slug}`}>
-                  <CatalogIcon slug={c.slug} />
-                  {c.name}
-                </Link>
-              ))}
-            </div>
-            <div className="tp-actions tp-category-actions">
-              <Link className="tp-btn tp-btn-primary" href="/servicios/">
-                Ver catálogo completo
-              </Link>
-            </div>
-          </div>
+      <section className="tp-section tp-mobile-summary">
+        <div className="tp-shell tp-mobile-summary-grid">
+          <div><span className="tp-kicker">Taller móvil</span><h2 className="tp-display tp-section-title">Nos vemos en tu próxima ruta.</h2><p className="tp-section-intro">Llevamos la mecánica de Tropicleta a carreras, cicletadas y jornadas comunitarias en Atacama. Coordinamos el apoyo según las necesidades de tu evento.</p><Link className="tp-btn tp-btn-secondary" href="/eventos/">Conocer el taller móvil →</Link></div>
+          <Link href="/eventos/" className="tp-mobile-summary-photo"><Image src="/taller/taller-movil-presentacion.jpeg" alt="Taller móvil Tropicleta: asistencia mecánica en terreno para eventos ciclistas" width={720} height={1056} sizes="(max-width: 700px) 80vw, 300px" /></Link>
         </div>
       </section>
 
       {/* ================= TIENDA ================= */}
-      <section className="tp-section tp-shop">
+      {featuredProducts.length > 0 && <section className="tp-section tp-shop">
         <div className="tp-shell">
           <div className="tp-shop-layout">
             <div>
@@ -184,7 +114,7 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* ================= CONVERSIÓN LOCAL ================= */}
       <WorkshopGallery />
@@ -192,10 +122,9 @@ export default async function HomePage() {
         <div className="tp-shell">
           <div className="tp-local-box">
             <span className="tp-kicker">Taller local</span>
-            <h2 className="tp-display tp-section-title">Tu bici, en buenas manos</h2>
+            <h2 className="tp-display tp-section-title">Taller en Tierra Amarilla, cerca de Copiapó</h2>
             <p className="tp-section-intro">
-              Atendemos con coordinación previa desde Tierra Amarilla y contamos con retiro y entrega en sectores
-              definidos de Tierra Amarilla, Paipote y Copiapó.
+              Visítanos en Carlos Condell 105, Tierra Amarilla, con coordinación previa. Si estás en Copiapó o Paipote, puedes solicitar retiro y entrega al armar tu cotización. El transporte se coordina según disponibilidad.
             </p>
             <ul className="tp-local-list">
               <li className="tp-local-item">Diagnóstico gratuito.</li>
@@ -208,7 +137,7 @@ export default async function HomePage() {
                 Hablar con Tropicleta
               </a>
               <Link className="tp-btn tp-btn-secondary" href="/contacto/">
-                Ver contacto
+                Ver ubicación y contacto
               </Link>
             </div>
           </div>

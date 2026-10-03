@@ -21,6 +21,7 @@ export async function getAccounting(value?: string) {
       date: e.date,
       type: e.type,
       category: e.category,
+      area: e.area,
       description: e.description,
       amount: e.amount,
       method: e.method,
@@ -36,6 +37,7 @@ export async function getAccounting(value?: string) {
       date: new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago" }).format(o.paidAt!),
       type: "ingreso",
       category: "Tienda online",
+      area: "productos" as const,
       description: `Venta ${o.code}`,
       amount: o.total,
       method: paymentLabel(o.paymentMethod),
@@ -49,5 +51,11 @@ export async function getAccounting(value?: string) {
   const active = rows.filter((r) => !r.voided);
   const income = active.filter((r) => r.type === "ingreso").reduce((s, r) => s + r.amount, 0);
   const expenses = active.filter((r) => r.type === "gasto").reduce((s, r) => s + r.amount, 0);
-  return { ...range, rows, income, expenses, balance: income - expenses };
+  const byArea = Object.fromEntries((["productos","servicios","general"] as const).map(area=>{
+    const entries=active.filter(r=>r.area===area);
+    const income=entries.filter(r=>r.type==="ingreso").reduce((sum,r)=>sum+r.amount,0);
+    const expenses=entries.filter(r=>r.type==="gasto").reduce((sum,r)=>sum+r.amount,0);
+    return [area,{income,expenses,balance:income-expenses}];
+  })) as Record<"productos"|"servicios"|"general",{income:number;expenses:number;balance:number}>;
+  return { ...range, rows, income, expenses, balance: income - expenses, byArea };
 }

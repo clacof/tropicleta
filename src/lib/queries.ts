@@ -28,9 +28,9 @@ export const getServiceCatalog = unstable_cache(
         .where(eq(services.active, true))
         .orderBy(asc(services.sort), asc(services.name)),
     ]);
-    return cats.map((c) => ({ ...c, services: rows.filter((s) => s.categoryId === c.id) }));
+    return cats.map((c) => ({ ...c, services: rows.filter((s) => s.categoryId === c.id) })).filter(c => c.services.length > 0);
   },
-  ["service-catalog"],
+  ["service-catalog-v10"],
   catalogCache,
 );
 
@@ -44,7 +44,7 @@ export const getService = unstable_cache(
       .limit(1);
     return rows[0] ?? null;
   },
-  ["service"],
+  ["service-v10"],
   catalogCache,
 );
 
@@ -77,7 +77,7 @@ const getHomeServicesFromDb = unstable_cache(
       categories: cats.map((c) => ({ slug: c.slug, name: c.name })),
     };
   },
-  ["home-services"],
+  ["home-services-v3"],
   catalogCache,
 );
 
@@ -102,7 +102,7 @@ export type ProductSort = "recientes" | "precio-asc" | "precio-desc";
 
 export const getProductCategories = unstable_cache(
   async () => db.select().from(productCategories).orderBy(asc(productCategories.sort)),
-  ["product-categories"],
+  ["product-categories-v2"],
   shopCache,
 );
 

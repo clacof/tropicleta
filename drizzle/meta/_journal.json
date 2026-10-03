@@ -29,6 +29,83 @@
       "when": 1790562089487,
       "tag": "0003_admin_panel",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790712000000,
+      "tag": "0004_official_catalog",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790798400000,
+      "tag": "0005_catalog_corrections",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790802000000,
+      "tag": "0007_package_quotes",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790809200000,
+      "tag": "0008_race_lub_product",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790812800000,
+      "tag": "0009_scooter_corrections",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790816400000,
+      "tag": "0010_manual_service_packs",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790820000000,
+      "tag": "0011_accounting_areas",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790825969375,
+      "tag": "0012_magenta_richard_fisk",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790828313581,
+      "tag": "0013_unknown_pepper_potts",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790880000000,
+      "tag": "0014_scooter_service_name",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1790880001000,
+      "tag": "0015_wheel_specific_services",
+      "breakpoints": true
     }
   ]
 }

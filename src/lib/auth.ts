@@ -28,6 +28,8 @@ function expectedPassword() {
   return process.env.ADMIN_PASSWORD ?? (isProd ? undefined : DEV_PASSWORD);
 }
 
+export { adminConfigurationError } from "./auth-config";
+
 function sign(payload: string) {
   return createHmac("sha256", secret()).update(payload).digest("base64url");
 }

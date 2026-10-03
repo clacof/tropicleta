@@ -1,9 +1,10 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
 import { WA_CONSULTAR } from "@/lib/whatsapp";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = { alternates: { canonical: siteUrl("/nosotros/") },
   title: "Nosotros",
   description: "Tropicleta es un taller de bicicletas y scooters eléctricos en Tierra Amarilla, Región de Atacama.",
 };

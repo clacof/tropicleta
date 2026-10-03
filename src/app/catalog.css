@@ -1,0 +1,53 @@
+.tp-catalog-search{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:24px}
+.tp-catalog-search-field{display:grid;gap:8px;flex:1 1 260px;font-size:14px;font-weight:600}
+.tp-catalog-search-field input{width:100%;min-width:0}
+.tp-catalog-count{color:#bbb;font-size:14px;margin:0 0 24px}
+.tp-catalog-empty{padding:32px;border:1px solid #444;border-radius:16px;background:#171717}
+.tp-catalog-empty h2{margin:0 0 12px;font-size:24px}
+.tp-draft-note{padding:18px;border:1px solid #7b5b20;border-radius:12px;background:#2a2112;margin-bottom:24px}
+@media(max-width:540px){.tp-catalog-search .tp-btn{flex:1 1 auto}.tp-catalog-search-field{flex-basis:100%}}
+
+.tp-quote-layout { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:32px; align-items:start; }
+.tp-quote-layout > div { display:grid; gap:24px; min-width:0; }
+.tp-quote-summary { position:sticky; top:110px; }
+.tp-quote-items { list-style:none; padding:0; display:grid; gap:16px; }
+.tp-quote-items li { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+.tp-quote-items small { display:block; }
+.tp-quote-total { font-size:1.6rem; font-weight:800; }
+.tp-quote-layout [hidden] { display:none; }
+.tp-quote-layout .tp-option { align-items:start; }
+.tp-quote-layout .tp-option a { display:block; font-size:.85rem; margin-top:8px; }
+@media(max-width:900px) { .tp-quote-layout { grid-template-columns:1fr; } .tp-quote-summary { position:static; grid-row:1; } }
+
+/* Cotización compacta: menos espacio vacío, conservando controles cómodos. */
+.tp-hero.tp-services-hero { padding-block:28px 18px; }
+.tp-services-hero .tp-hero-copy { margin-bottom:0; }
+.tp-section.tp-services-section { padding-block:20px 36px; }
+.tp-form.tp-quote-layout { gap:20px; }
+.tp-quote-layout > div { gap:16px; }
+.tp-quote-layout .tp-fieldset { gap:8px; }
+.tp-quote-layout .tp-fieldset legend { margin-bottom:6px; }
+.tp-quote-layout .tp-form-grid { gap:12px; }
+.tp-quote-layout .tp-field { gap:5px; }
+.tp-quote-layout .tp-options, .tp-quote-layout .tp-package-grid { gap:8px; }
+.tp-quote-layout .tp-option { padding:10px 12px; gap:9px; min-height:44px; }
+.tp-quote-layout .tp-package-option { padding:10px; }
+.tp-quote-layout .tp-package-option > .tp-option { padding:4px; }
+.tp-quote-layout .tp-package-option b { margin-block:4px; }
+.tp-quote-layout .tp-pack-details { padding:6px 4px 2px; }
+.tp-quote-layout .tp-pack-details summary { min-height:32px; display:flex; align-items:center; }
+.tp-quote-layout .tp-quote-heading { margin:10px 0 6px; font-size:20px; }
+.tp-quote-layout .tp-quote-category { margin:12px 0 6px; }
+.tp-quote-layout .tp-service-option { padding:4px; }
+.tp-quote-layout .tp-service-option .tp-option { padding:6px; }
+.tp-quote-layout .tp-option a { margin-top:4px; min-height:28px; display:flex; align-items:center; }
+.tp-quote-layout .tp-vehicle-picker { margin-bottom:0; }
+.tp-quote-layout .tp-vehicle-tabs, .tp-quote-layout .tp-vehicle-actions { margin-bottom:6px; gap:6px; }
+.tp-quote-layout .tp-hint { margin-block:6px; }
+.tp-quote-layout .tp-quote-items { gap:10px; margin-block:8px; }
+.tp-quote-layout .tp-vehicle-summary { padding:8px 0; }
+@media(max-width:600px) {
+  .tp-form.tp-quote-layout { gap:16px; }
+  .tp-quote-layout .tp-package-option { padding:8px; }
+  .tp-quote-layout .tp-quote-summary { padding:16px; }
+}

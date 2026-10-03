@@ -1,7 +1,8 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
 
-export const metadata: Metadata = { title: "Garantía", description: "Garantía de 2 semanas en los servicios del taller Tropicleta." };
+export const metadata: Metadata = { alternates: { canonical: siteUrl("/garantia/") }, title: "Garantía", description: "Garantía de 2 semanas en los servicios del taller Tropicleta." };
 
 export default function GarantiaPage() {
   return (

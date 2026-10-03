@@ -1,0 +1,15 @@
+import assert from "node:assert/strict";
+import { renameServiceReferences } from "../src/lib/service-edit";
+import { packageQuote,validateHierarchy,type PackageService } from "../src/lib/package-quote";
+const item=(slug:string):PackageService=>({slug,name:slug,price:7000,priceFrom:false,kind:"individual",components:[],vehicles:["bicicleta"],individuallySelectable:true,active:true});
+const rows=[item("freno"),{...item("pack"),kind:"package",components:[{slug:"freno",required:true}]},{...item("pack-grande"),kind:"package",components:[{slug:"pack",required:true}]}];
+const renamed=renameServiceReferences(rows,"freno","ajuste-freno").map(s=>s.slug==="freno"?{...s,slug:"ajuste-freno",name:"Ajuste actualizado"}:s);
+validateHierarchy(renamed);
+assert.equal(renamed[1].components[0].slug,"ajuste-freno");
+assert.equal(rows[1].components[0].slug,"freno");
+assert.deepEqual(packageQuote(renamed,{manual:[],packages:["pack-grande"],excluded:[]},"bicicleta").leaves,["ajuste-freno"]);
+const packRenamed=renameServiceReferences(renamed,"pack","nuevo-pack").map(s=>s.slug==="pack"?{...s,slug:"nuevo-pack"}:s);
+validateHierarchy(packRenamed);
+assert.equal(packRenamed[2].components[0].slug,"nuevo-pack");
+assert.deepEqual(packageQuote(packRenamed,{manual:[],packages:["pack-grande"],excluded:[]},"bicicleta").leaves,["ajuste-freno"]);
+console.log("Cambios de URL conservan los vínculos de servicios, packs y packs anidados.");

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const categories = ["Taller", "Venta presencial", "Repuestos", "Arriendo", "Servicios básicos", "Sueldos", "Transporte", "Comisiones", "Devolución", "Otros"] as const;
 export const methods = ["Efectivo", "Transferencia", "Tarjeta", "Otro"] as const;
+export const accountingAreas = {productos:"Productos", servicios:"Servicios", general:"General / sin asignar"} as const;
 export function localDate(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
 }
@@ -10,6 +11,7 @@ export const entrySchema = z.object({
   date: z.iso.date().refine(v => v <= localDate(), "La fecha no puede ser futura"),
   type: z.enum(["ingreso", "gasto"]),
   category: z.enum(categories),
+  area: z.enum(["productos", "servicios", "general"]).default("general"),
   description: z.string().trim().min(3).max(500),
   amount: z.coerce.number().int().min(1).max(2_000_000_000),
   method: z.enum(methods),

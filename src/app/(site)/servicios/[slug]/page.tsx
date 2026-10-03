@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -14,6 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getService(slug);
   if (!data) return { title: "Servicio no encontrado" };
   return {
+    alternates: { canonical: siteUrl(`/servicios/${data.service.slug}/`) },
     title: data.service.name,
     description: data.service.summary ?? `${data.service.name} en Tropicleta, Tierra Amarilla.`,
   };
@@ -62,11 +64,11 @@ export default async function ServicioPage({ params }: Props) {
             </div>
             {s.duration && <p className="tp-muted tp-small">Tiempo estimado: {s.duration}</p>}
             <p className="tp-muted tp-small">
-              El precio final se confirma tras el diagnóstico gratuito. Repuestos se cotizan aparte.
+              Confirma alcance y disponibilidad al coordinar. Los repuestos o trabajos adicionales no indicados en la ficha se cotizan aparte.
             </p>
             <div className="tp-stack" style={{ marginTop: 18 }}>
-              <Link className="tp-btn tp-btn-primary tp-btn-block" href={`/agendar/?servicio=${s.slug}`}>
-                Solicitar hora
+              <Link className="tp-btn tp-btn-primary tp-btn-block" href={`/servicios/?servicio=${s.slug}`}>
+                Agregar a mi cotización
               </Link>
               <a
                 className="tp-btn tp-btn-secondary tp-btn-block"

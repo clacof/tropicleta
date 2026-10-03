@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect,useRef } from "react";
 import { useCart } from "./CartProvider";
 import { QtyControl } from "./QtyControl";
 import { ProductMedia } from "@/components/shop/ProductMedia";
@@ -8,12 +9,28 @@ import { formatCLP } from "@/lib/format";
 
 export function CartDrawer() {
   const { isOpen, close, items, subtotal, setQuantity, remove } = useCart();
+  const drawer=useRef<HTMLElement>(null);
+  useEffect(()=>{
+    if(!isOpen)return;
+    const previous=document.activeElement instanceof HTMLElement?document.activeElement:null;
+    const focusables=()=>Array.from(drawer.current?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]')??[]).filter(element=>element.offsetParent!==null);
+    focusables()[0]?.focus();
+    const keepFocus=(event:FocusEvent)=>{if(event.target instanceof Node&&!drawer.current?.contains(event.target))focusables()[0]?.focus();};
+    const onKey=(event:KeyboardEvent)=>{
+      if(event.key!=="Tab")return;
+      const elements=focusables();const first=elements[0];const last=elements.at(-1);
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+    };
+    document.addEventListener("focusin",keepFocus);document.addEventListener("keydown",onKey);
+    return()=>{document.removeEventListener("focusin",keepFocus);document.removeEventListener("keydown",onKey);if(previous?.isConnected)previous.focus();};
+  },[isOpen]);
   if (!isOpen) return null;
 
   return (
     <>
       <div className="tp-drawer-backdrop" onClick={close} aria-hidden="true" />
-      <aside className="tp-drawer" role="dialog" aria-modal="true" aria-labelledby="tp-cart-title">
+      <aside ref={drawer} className="tp-drawer" role="dialog" aria-modal="true" aria-labelledby="tp-cart-title">
         <div className="tp-drawer-head">
           <h2 id="tp-cart-title" className="tp-display">
             Tu carrito

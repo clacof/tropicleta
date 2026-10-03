@@ -1,9 +1,10 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
 import { shopRules } from "@/data/shop";
 import { formatCLP } from "@/lib/format";
 
-export const metadata: Metadata = { title: "Envíos y devoluciones", description: "Despacho, retiro en taller, cambios y devoluciones de la tienda Tropicleta." };
+export const metadata: Metadata = { alternates: { canonical: siteUrl("/envios-y-devoluciones/") }, title: "Envíos y devoluciones", description: "Despacho, retiro en taller, cambios y devoluciones de la tienda Tropicleta." };
 
 export default function EnviosPage() {
   const rates = Object.entries(shopRules.shippingByCommune)

@@ -51,12 +51,15 @@ export const bookingSchema = z
     name: trimmed("Ingresa tu nombre", 2, 80),
     phone: phoneSchema,
     email: optionalEmail,
-    vehicleType: z.enum(["bicicleta", "scooter"], { error: "Elige bicicleta o scooter" }),
+    vehicleType: z.string().trim().min(1, "Elige el tipo de vehículo").max(20),
+    doubleSuspension: z.string().optional().transform(v => v === "on"),
+    selection: z.string().max(12000).optional(),
+    vehicleQuotes: z.string().max(80000).optional(),
     vehicleDetails: z.string().trim().max(200).optional(),
     services: z
       .union([z.string(), z.array(z.string())], { error: "Elige al menos un servicio" })
       .transform((v) => (Array.isArray(v) ? v : [v]))
-      .pipe(z.array(z.string().min(1)).min(1, "Elige al menos un servicio").max(10)),
+      .pipe(z.array(z.string().min(1)).min(1, "Elige al menos un servicio").max(400)),
     preferredDate: z
       .string({ error: "Elige una fecha" })
       .pipe(z.iso.date("Elige una fecha válida"))
@@ -67,6 +70,8 @@ export const bookingSchema = z
       .optional()
       .transform((v) => v === "on"),
     pickupCommune: z.string().optional(),
+    transportMode: z.enum(["both", "pickup", "delivery"]).default("both"),
+    firstService: z.string().optional().transform(v => v === "on"),
     pickupAddress: z.string().trim().max(200).optional(),
     notes: z.string().trim().max(1000).optional(),
     website: z.string().max(0, "spam").optional(),
@@ -76,7 +81,7 @@ export const bookingSchema = z
     if (!deliveryCommunes.includes(d.pickupCommune as never))
       ctx.addIssue({ code: "custom", path: ["pickupCommune"], message: "Elige una comuna con cobertura" });
     if (!d.pickupAddress || d.pickupAddress.length < 5)
-      ctx.addIssue({ code: "custom", path: ["pickupAddress"], message: "Ingresa la dirección de retiro" });
+      ctx.addIssue({ code: "custom", path: ["pickupAddress"], message: "Ingresa la dirección para el transporte" });
   });
 
 export const checkoutSchema = z

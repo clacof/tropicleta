@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   trailingSlash: true, // mantiene las URLs del sitio original (/servicios/, /tienda/...)
+  async redirects() {
+    return [{ source: "/sobre-tropicleta/", destination: "/nosotros/", permanent: true }];
+  },
   serverExternalPackages: ["@electric-sql/pglite", "pg"],
   // Solo `next dev`: permite abrir el sitio desde la red local (ej. http://192.168.1.122:3000 en el celular).
   // Sin esto Next bloquea el JS de desarrollo y ningún botón responde.

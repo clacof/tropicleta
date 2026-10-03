@@ -3,7 +3,7 @@ import Link from "next/link";
 import { randomUUID } from "node:crypto";
 import { AccountingForm, VoidEntryForm } from "@/components/admin/AccountingForm";
 import { getAccounting } from "@/lib/accounting";
-import { localDate } from "@/lib/accounting-validation";
+import { localDate, accountingAreas } from "@/lib/accounting-validation";
 import { requireAdmin } from "@/lib/auth";
 import { formatCLP, formatDate } from "@/lib/format";
 
@@ -66,6 +66,7 @@ export default async function AccountingPage({ searchParams }: Props) {
               <th>Fecha</th>
               <th>Movimiento</th>
               <th>Categoría</th>
+              <th>Área</th>
               <th>Medio / referencia</th>
               <th className="num">Ingreso</th>
               <th className="num">Gasto</th>
@@ -92,6 +93,7 @@ export default async function AccountingPage({ searchParams }: Props) {
                   )}
                 </td>
                 <td>{r.category}</td>
+                <td>{accountingAreas[r.area]}</td>
                 <td>
                   {r.method}
                   <br />
@@ -116,7 +118,7 @@ export default async function AccountingPage({ searchParams }: Props) {
             ))}
             {!data.rows.length && (
               <tr>
-                <td colSpan={7}>No hay movimientos en este período. Registra el primer ingreso o gasto del taller.</td>
+                <td colSpan={8}>No hay movimientos en este período. Registra el primer ingreso o gasto del taller.</td>
               </tr>
             )}
           </tbody>

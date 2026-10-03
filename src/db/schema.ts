@@ -20,6 +20,7 @@ export const cashEntries = pgTable("cash_entries", {
   date: date("date").notNull(),
   type: varchar("type", { length: 10 }).notNull(),
   category: varchar("category", { length: 60 }).notNull(),
+  area: varchar("area", { length: 16 }).$type<"productos" | "servicios" | "general">().notNull().default("general"),
   description: text("description").notNull(),
   amount: integer("amount").notNull(),
   method: varchar("method", { length: 30 }).notNull(),
@@ -28,9 +29,17 @@ export const cashEntries = pgTable("cash_entries", {
   voidReason: text("void_reason"),
   voidedAt: timestamp("voided_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-}, (t) => [uniqueIndex("cash_request_unique").on(t.requestId), check("cash_positive", sql`${t.amount} > 0`), check("cash_type", sql`${t.type} in ('ingreso', 'gasto')`)]);
+}, (t) => [uniqueIndex("cash_request_unique").on(t.requestId), check("cash_positive", sql`${t.amount} > 0`), check("cash_type", sql`${t.type} in ('ingreso', 'gasto')`), check("cash_area",sql`${t.area} in ('productos', 'servicios', 'general')`)]);
 
 /* ============================ SERVICIOS ============================ */
+
+export const quoteVehicles = pgTable("quote_vehicles", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 20 }).notNull().unique(),
+  name: varchar("name", { length: 60 }).notNull(),
+  removed: boolean("removed").notNull().default(false),
+  sort: integer("sort").notNull().default(0),
+});
 
 export const serviceCategories = pgTable("service_categories", {
   id: serial("id").primaryKey(),
@@ -53,10 +62,17 @@ export const services = pgTable("services", {
   price: integer("price"), // CLP entero; null = "a cotizar"
   priceFrom: boolean("price_from").notNull().default(false), // muestra "desde"
   duration: text("duration"),
+  kind: varchar("kind", { length: 16 }).notNull().default("individual"),
+  components: jsonb("components").$type<import("../lib/package-quote").Component[]>().notNull().default([]),
+  vehicles: jsonb("vehicles").$type<import("../lib/package-quote").Vehicle[]>().notNull().default(["bicicleta", "electrica"]),
+  individuallySelectable: boolean("individually_selectable").notNull().default(true),
+  requiresDoubleSuspension: boolean("requires_double_suspension").notNull().default(false),
+  excludesDoubleSuspension: boolean("excludes_double_suspension").notNull().default(false),
+  removed: boolean("removed").notNull().default(false),
   featured: boolean("featured").notNull().default(false),
   active: boolean("active").notNull().default(true),
   sort: integer("sort").notNull().default(0),
-});
+}, (t) => [check("service_kind_valid", sql`${t.kind} in ('individual', 'package')`)]);
 
 /* ============================ TIENDA ============================ */
 
@@ -75,6 +91,7 @@ export const products = pgTable("products", {
   description: text("description"),
   price: integer("price").notNull(),
   compareAtPrice: integer("compare_at_price"),
+  removed: boolean("removed").notNull().default(false),
   stock: integer("stock").notNull().default(0),
   images: jsonb("images").$type<string[]>().notNull().default([]),
   featured: boolean("featured").notNull().default(false),
@@ -107,6 +124,7 @@ export const bookings = pgTable("bookings", {
   pickup: boolean("pickup").notNull().default(false),
   pickupCommune: text("pickup_commune"),
   pickupAddress: text("pickup_address"),
+  quoteSnapshot: jsonb("quote_snapshot").$type<Record<string, unknown>>(),
   notes: text("notes"),
   status: bookingStatus("status").notNull().default("nueva"),
   internalNotes: text("internal_notes"), // solo visible en el panel

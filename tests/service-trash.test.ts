@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import { serviceDeletionBlocker } from "../src/lib/service-trash";
+const service={id:1,name:"Cambio de cámara de scooter",slug:"cambio-de-camara-trasera-scooter",removed:true,components:[]};
+assert.equal(serviceDeletionBlocker(service,[service],[]),null);
+assert.match(serviceDeletionBlocker({...service,removed:false},[service],[])!,/primero/);
+assert.match(serviceDeletionBlocker(service,[service,{id:2,name:"Pack quitado",components:[{slug:service.slug,required:true}]}],[])!,/Pack quitado/);
+assert.match(serviceDeletionBlocker(service,[service],[{serviceNames:[],quoteSnapshot:{vehicles:[{calculation:{includedQuantities:{[service.slug]:1}}}]}}])!,/reservas/);
+assert.match(serviceDeletionBlocker(service,[service],[{serviceNames:[`Scooter eléctrico 1 · ${service.name} ×1`],quoteSnapshot:null}])!,/reservas/);
+assert.equal(serviceDeletionBlocker(service,[service],[{serviceNames:["Otro servicio"],quoteSnapshot:{slug:"otra-url"}}]),null);
+console.log("PASS: service trash blocks live services, pack references and booking history");
